@@ -19,9 +19,15 @@ db.init_app(app)
 # --- Application Views (Routes) ---
 @app.route('/')
 def home():
-    books = Book.query.all()
-    categories = Category.query.all()
-    return render_template('home.html', books=books, categories=categories)
+    status_filter = request.args.get('status_filter')
+
+    if status_filter in ['0', '1', '2']:
+        books = Book.query.filter_by(status=int(status_filter)).all()
+    else:
+        books = Book.query.all()
+
+    return render_template('home.html', books=books, status_filter=status_filter)
+
 
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():

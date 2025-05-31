@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 # placeholder, real object initialized in app.py 
 db = SQLAlchemy()
 
+
 # BOOK model
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -23,6 +23,7 @@ class Book(db.Model):
     rating = db.Column(db.Integer, nullable=True) # rating (from 1 - 5)
     review = db.Column(db.Text, nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    is_favorite = db.Column(db.Boolean, default=False)
 
     # relation to Category
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)

@@ -20,13 +20,33 @@ db.init_app(app)
 @app.route('/')
 def home():
     status_filter = request.args.get('status_filter')
+    only_favorites = request.args.get('only_favorites') == '1'
+
+    query = Book.query
 
     if status_filter in ['0', '1', '2']:
-        books = Book.query.filter_by(status=int(status_filter)).all()
-    else:
-        books = Book.query.all()
+        query = query.filter_by(status=int(status_filter))
 
-    return render_template('home.html', books=books, status_filter=status_filter)
+    if only_favorites:
+        query = query.filter_by(is_favorite=True)
+
+    books = query.all()
+
+    total_books = Book.query.count()
+    to_read_count = Book.query.filter_by(status=0).count()
+    reading_count = Book.query.filter_by(status=1).count()
+    read_count = Book.query.filter_by(status=2).count()
+
+    return render_template(
+        'home.html',
+        books=books,
+        status_filter=status_filter,
+        only_favorites=only_favorites,
+        total_books=total_books,
+        to_read_count=to_read_count,
+        reading_count=reading_count,
+        read_count=read_count
+    )
 
 
 @app.route('/add_book', methods=['GET', 'POST'])
@@ -159,7 +179,9 @@ def add_from_api():
                 year_published=year_published,
                 page_count=page_count,
                 cover_url=cover_url,
+                is_favorite=False,
                 status=0 # Default to "To Read"
+
             )
             db.session.add(new_book)
             db.session.commit()
@@ -181,6 +203,21 @@ def remove_book(book_id):
         db.session.rollback() # Rollback in case of an error
         flash(f"Error removing book: {e}", 'danger')
     return redirect(url_for('home'))
+
+
+@app.route('/toggle_favorite/<int:book_id>', methods=['POST'])
+def toggle_favorite(book_id):
+    book = Book.query.get_or_404(book_id)
+    book.is_favorite = not book.is_favorite
+    try:
+        db.session.commit()
+        status = "added to" if book.is_favorite else "removed from"
+        flash(f'Book "{book.title}" {status} favorites.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating favorite status: {e}", 'danger')
+    return redirect(url_for('home'))
+
 
 
 

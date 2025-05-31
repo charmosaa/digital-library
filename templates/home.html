@@ -93,16 +93,16 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            right: 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            gap: 8px;
+            flex-wrap: wrap;
             z-index: 2;
         }
 
-        .book-category-badge,
-        .book-status-badge {
+        .book-category-badge {
             display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .category-tag,
@@ -253,7 +253,6 @@
 
     <p><a href="{{ url_for('add_book') }}" class="button-link">Add Book Manually</a></p>
 
-    <!-- FILTER FORM -->
     <form method="GET" action="{{ url_for('home') }}" class="status-filter-form">
         <label for="status_filter">Filter by status:</label>
         <select name="status_filter" id="status_filter" onchange="this.form.submit()">
@@ -262,12 +261,22 @@
             <option value="1" {% if status_filter == '1' %}selected{% endif %}>Reading</option>
             <option value="2" {% if status_filter == '2' %}selected{% endif %}>Read</option>
         </select>
+
+        <label style="margin-left: 10px;">
+        <input type="checkbox" name="only_favorites" value="1" {% if only_favorites %}checked{% endif %} onchange="this.form.submit()">
+        Only favorites
+        </label>
     </form>
-
-
 
     {% if books %}
         <h2>Your Books:</h2>
+        <div style="margin: 15px 0; font-weight: bold; font-size: 1em;">
+            Total books: {{ total_books }} |
+            To Read: {{ to_read_count }} |
+            Reading: {{ reading_count }} |
+            Read: {{ read_count }}
+        </div>
+
         <div class="book-grid">
             {% for book in books %}
                 <div class="book-card">
@@ -278,8 +287,7 @@
                             {% else %}
                                 <span class="category-tag">Uncategorized</span>
                             {% endif %}
-                        </div>
-                        <div class="book-status-badge">
+
                             {% if book.status|int == 0 %}
                                 <span class="status-to-read">To Read</span>
                             {% elif book.status|int == 1 %}
@@ -306,6 +314,15 @@
                         <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-button">Status</a>
                         <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book?');">Remove</button>
+                        </form>
+                        <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
+                            <button type="submit" style="background: none; border: none; font-size: 1.3em; cursor: pointer;">
+                                {% if book.is_favorite %}
+                                    ⭐
+                                {% else %}
+                                    ☆
+                                {% endif %}
+                            </button>
                         </form>
                     </div>
                 </div>

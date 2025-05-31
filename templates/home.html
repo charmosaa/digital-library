@@ -300,7 +300,13 @@
 
                     <div class="book-details">
                         {% if book.cover_url %}
-                            <img src="{{ book.cover_url }}" alt="Book Cover">
+                            <a href="{{ url_for('book_detail', book_id=book.id) }}">
+                            <img src="{{ book.cover_url or url_for('static', filename='no_cover.png') }}" alt="Book Cover">
+                        </a>
+                        <a href="{{ url_for('book_detail', book_id=book.id) }}">
+
+                        </a>
+
                         {% else %}
                             <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
                         {% endif %}

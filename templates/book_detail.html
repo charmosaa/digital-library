@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ book.title }} - Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        .cover-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .cover-container img {
+            width: 200px;
+            height: 300px;
+            object-fit: contain;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+            text-align: left;
+            max-width: 600px;
+            margin: 10px auto;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .edit-button {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 30px;
+            font-size: 16px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if book.cover_url %}
+            <div class="cover-container">
+                <img src="{{ book.cover_url }}" alt="Book Cover">
+            </div>
+        {% endif %}
+        <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 20px; right: 20px;">
+            <button type="submit" style="background: none; border: none; font-size: 1.8em; cursor: pointer;">
+                {% if book.is_favorite %}
+                    ⭐
+                {% else %}
+                    ☆
+                {% endif %}
+            </button>
+        </form>
+        <h1>{{ book.title }}</h1>
+        <p><span class="label">Author:</span> {{ book.author }}</p>
+        {% if book.year_published %}<p><span class="label">Year:</span> {{ book.year_published }}</p>{% endif %}
+        {% if book.page_count %}<p><span class="label">Pages:</span> {{ book.page_count }}</p>{% endif %}
+        {% if book.isbn %}<p><span class="label">ISBN:</span> {{ book.isbn }}</p>{% endif %}
+        {% if book.status == 0 %}<p><span class="label">Status:</span> To Read</p>
+        {% elif book.status == 1 %}<p><span class="label">Status:</span> Reading ({{ book.current_page or 0 }} pages in)</p>
+        {% elif book.status == 2 %}<p><span class="label">Status:</span> Read</p>{% endif %}
+        {% if book.rating %}<p><span class="label">Rating:</span> {{ book.rating }}/10</p>{% endif %}
+        {% if book.review %}<p><span class="label">Review:</span> {{ book.review }}</p>{% endif %}
+        {% if book.description %}<p><span class="label">Description:</span><br>{{ book.description }}</p>{% endif %}
+
+        <div class="actions">
+            <a href="{{ url_for('edit_book', book_id=book.id) }}" class="button edit-button">Status</a>
+            <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                <button type="submit" class="button delete-button">Remove</button>
+            </form>
+        </div>
+
+        <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>
+    </div>
+</body>
+</html>

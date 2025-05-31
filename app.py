@@ -218,7 +218,8 @@ def toggle_favorite(book_id):
     except Exception as e:
         db.session.rollback()
         flash(f"Error updating favorite status: {e}", 'danger')
-    return redirect(url_for('home'))
+    previous_url = request.referrer or url_for('home')
+    return redirect(previous_url)
 
 
 # --- Edit Book Route ---
@@ -260,6 +261,14 @@ def edit_book(book_id):
     
     # For GET request, render the form with existing book data
     return render_template('edit_book.html', book=book, categories=categories)
+
+
+@app.route('/book/<int:book_id>')
+def book_detail(book_id):
+    book = Book.query.get_or_404(book_id)
+    return render_template('book_detail.html', book=book)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

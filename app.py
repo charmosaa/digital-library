@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
 import requests
 from models import db, Book, Category 
+from flask_migrate import Migrate 
 
 load_dotenv()
 
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+migrate = Migrate(app, db) 
 
 # --- Application Views (Routes) ---
 @app.route('/')
@@ -230,7 +232,7 @@ def edit_book(book_id):
     if request.method == 'POST':
         try:
             # ONLY update category, status, and current_page
-            
+
             # Handle category
             category_id = request.form.get('category_id')
             book.category_id = int(category_id) if category_id else None

@@ -14,13 +14,12 @@ The primary goal of this project is to create a comprehensive tool for book enth
 ## So far implemented:
 - book and category model in database
 - book browsing (via API)
-- adding book to 'To Read' collection
+- adding book to (to-read, reading, read)  collection
 - adding book manualy (for testing)
+- adding to favourite and filtering by favourite
 ---
 ## TO DO:
- - adding book category (for the books from API)
- - when adding to collection to be able to specify (to-read, in-progress, completed) 
- - removing from collection
+ - adding book category (for the books from API now they are all uncategorized)
  - when clicking on the book maybe more info?
  - maybe more filters for browsing
  - diagrams and stats for your books
@@ -89,41 +88,11 @@ Local setup:
 
 ---  
 
-5.  **For the first time - init database:**
-    ```bash
-    flask shell
-    ```
-
-    **Than in the shell:**
-    ```bash
-    from app import app, db
-    import os
-    ```
-    and
+5.  **For the first time and after any changes in `models.py` - upgrade database:**
 
     ```bash
-    with app.app_context():
-        # we should be the project's root
-        print(f"Current working directory: {os.getcwd()}")
-
-        # this is where 'site.db' will be created
-        db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
-        print(f"Database will be created at: {os.path.abspath(db_path)}")
-
-        from models import Category # Import Category model to add sample data
-        db.create_all() # This creates all tables defined in models.py
-
-        # Optional: Add some sample categories
-        c1 = Category(name='Fantasy')
-        c2 = Category(name='Science Fiction')
-        c3 = Category(name='Horror')
-        db.session.add_all([c1, c2, c3])
-        db.session.commit()
-
-        print("Database tables created and sample categories added successfully!")
+    flask db upgrade
     ```
-    After this block click Enter again (should see the prints now) and then exit() to leave the flask shell
-
 ---   
 
 6.  **Add no-cover img:**
@@ -144,7 +113,7 @@ Local setup:
 
 ### Home page - your collection
 
-![Home page - your collection](screenshots/home_your_collection.png)
+![Home page - your collection](screenshots\home_your_collection.png)
 
 ### Browse with API
 

@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from dotenv import load_dotenv
 import requests
-from models import db, Book, Category # Ensure Book and Category are imported from models
+from models import db, Book, Category 
 
 load_dotenv()
 
@@ -162,6 +162,61 @@ def add_from_api():
         flash(f"An error occurred while adding the book: {e}", 'danger')
 
     return redirect(url_for('home'))
+
+# --- Delete Book Route ---
+@app.route('/remove_book/<int:book_id>', methods=['POST'])
+def remove_book(book_id):
+    book_to_delete = Book.query.get_or_404(book_id)
+    try:
+        db.session.delete(book_to_delete)
+        db.session.commit()
+        flash(f'Book "{book_to_delete.title}" removed from your shelf.', 'success')
+    except Exception as e:
+        db.session.rollback() # Rollback in case of an error
+        flash(f"Error removing book: {e}", 'danger')
+    return redirect(url_for('home'))
+
+
+
+# --- Edit Book Route ---
+@app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
+def edit_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    categories = Category.query.all()
+
+    if request.method == 'POST':
+        try:
+            # ONLY update category, status, and current_page
+            
+            # Handle category
+            category_id = request.form.get('category_id')
+            book.category_id = int(category_id) if category_id else None
+
+            # Handle status
+            new_status = int(request.form.get('status'))
+            book.status = new_status
+
+            # Handle current_page based on new_status
+            if new_status == 1: # If status is "Reading"
+                current_page_str = request.form.get('current_page')
+                book.current_page = int(current_page_str) if current_page_str else 0
+            else: # If status is not "Reading", reset current_page
+                book.current_page = None
+
+            db.session.commit()
+            flash(f'Book "{book.title}" updated successfully!', 'success')
+            return redirect(url_for('home'))
+        except ValueError:
+            db.session.rollback()
+            flash("Invalid input for current page. Please enter a valid number.", 'danger')
+        except Exception as e:
+            db.session.rollback()
+            flash(f"An error occurred while updating the book: {e}", 'danger')
+    
+    # For GET request, render the form with existing book data
+    return render_template('edit_book.html', book=book, categories=categories)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -2,7 +2,7 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
-# placeholdeer real object initialized in app.py 
+# placeholder, real object initialized in app.py 
 db = SQLAlchemy()
 
 # BOOK model

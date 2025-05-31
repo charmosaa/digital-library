@@ -17,18 +17,60 @@
 
         .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
         
-        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
         .book-card { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
         .book-card img { max-width: 100%; height: auto; max-height: 200px; object-fit: contain; border-radius: 4px; margin-bottom: 10px; }
         .book-card h3 { font-size: 1.2em; margin-top: 0; margin-bottom: 5px; color: #333; }
         .book-card p { font-size: 0.9em; color: #666; margin-bottom: 5px; }
-        .category-tag { background-color: #6c757d; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; margin-top: 5px; align-self: flex-start; }
+        .category-tag { background-color: #6c757d; color: white; padding: 3px 8px; border-radius: 4px; font-size: 1em; margin-bottom: 5px; align-self: flex-start; }
+        .status-to-read { background-color: #248a94; color: #ffffff; padding: 3px 8px; border-radius: 4px; font-size: 1em; margin-bottom: 5px; align-self: flex-end; }
+        .status-reading { background-color: rgb(34, 99, 159);; color: white; padding: 3px 8px; border-radius: 4px; font-size: 1em; margin-bottom: 5px; align-self: flex-end; }
+        .status-read { background-color: #4042d7; color: white; padding: 3px 8px; border-radius: 4px; font-size: 1em; margin-bottom: 5px; align-self: flex-end; }
         .book-card .book-details { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; width: 100%; }
-
+        .book-info {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        width: 100%;
+        padding-bottom: 10px;
+        }
+        .book-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        .edit-button {
+            background-color: #ffc107; /* Yellow/orange for edit */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .edit-button:hover {
+            background-color: #e0a800; /* Darker yellow on hover */
+        }
+        .delete-button {
+            background-color: #dc3545; /* Red color for delete */
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .delete-button:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
     </style>
 </head>
 <body>
-    <h1>My Book Collection</h1>
+    <h1>My Shelf</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -51,6 +93,25 @@
             {% for book in books %}
                 <div class="book-card">
                     <div class="book-details">
+                        <div class="book-info">
+                            <div>
+                                {% if book.category %}
+                                    <span class="category-tag">{{ book.category.name }}</span>
+                                {% else %}
+                                    <span class="category-tag">Uncategorized</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if book.status == 0 %}
+                                    <span class="status-to-read">To Read</span>
+                                {% elif book.status == 1 %}
+                                    <span class="status-reading">Reading</span>
+                                {% elif book.status == 2 %}
+                                    <span class="status-read">Read</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
                         {% if book.cover_url %}
                             <img src="{{ book.cover_url }}" alt="Book Cover">
                         {% else %}
@@ -58,12 +119,15 @@
                         {% endif %}
                         <h3>{{ book.title }}</h3>
                         <p>Author: {{ book.author }}</p>
-                        {% if book.category %}<span class="category-tag">{{ book.category.name }}</span>{% endif %}
                         {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}
                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
-                        {% if book.status == 0 %}<p>Status: To Read</p>
-                        {% elif book.status == 1 %}<p>Status: Reading (page {{ book.current_page }})</p>
-                        {% elif book.status == 2 %}<p>Status: Read</p>{% endif %}
+                    </div>
+                    
+                    <div class="book-actions">
+                        <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-button">Status</a>
+                        <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book?');">Remove</button>
+                        </form>
                     </div>
                     </div>
             {% endfor %}

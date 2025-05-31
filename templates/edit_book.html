@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Book: {{ book.title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; color: #343a40; }
+        h1 { color: #007bff; }
+        form { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; /* Smaller max-width */ margin: 20px auto; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="number"], select { width: calc(100% - 22px); /* Adjust for padding and border */ padding: 10px; margin-bottom: 20px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        input[type="submit"] { background-color: #007bff; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; transition: background-color 0.3s ease; }
+        input[type="submit"]:hover { background-color: #0056b3; }
+        .back-link { display: inline-block; margin-top: 20px; color: #007bff; text-decoration: none; font-size: 16px; }
+        .back-link:hover { text-decoration: underline; }
+        .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+        .message.danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+        #current_page_field {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Update Progress for: {{ book.title }}</h1>
+    <p>Author: {{ book.author }}</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {# Only Category, Status, and Current Page are editable here #}
+
+        <label for="category_id">Category:</label>
+        <select id="category_id" name="category_id">
+            <option value="">Select a category (None)</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if book.category_id == category.id %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <label for="status">Status:</label>
+        <select id="status" name="status" onchange="toggleCurrentPageField()">
+            <option value="0" {% if book.status == 0 %}selected{% endif %}>To Read</option>
+            <option value="1" {% if book.status == 1 %}selected{% endif %}>Reading</option>
+            <option value="2" {% if book.status == 2 %}selected{% endif %}>Read</option>
+        </select>
+
+        <div id="current_page_field">
+            <label for="current_page">Current Page:</label>
+            <input type="number" id="current_page" name="current_page" value="{{ book.current_page or '' }}" min="0">
+        </div>
+
+        <input type="submit" value="Save Changes">
+    </form>
+    <a href="{{ url_for('home') }}" class="back-link">Back to My Collection</a>
+
+    <script>
+        function toggleCurrentPageField() {
+            var statusSelect = document.getElementById('status');
+            var currentPageField = document.getElementById('current_page_field');
+            if (statusSelect.value == '1') { // '1' corresponds to 'Reading' status
+                currentPageField.style.display = 'block';
+            } else {
+                currentPageField.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', toggleCurrentPageField);
+    </script>
+</body>
+</html>

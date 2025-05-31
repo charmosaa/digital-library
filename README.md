@@ -88,7 +88,7 @@ Local setup:
 
 ---  
 
-5.  **For the first time and after any changes in `models.py` - upgrade database:**
+5.  **Upgrade database:** when running the first time and after any changes in `models.py`
 
     ```bash
     flask db upgrade
@@ -113,7 +113,7 @@ Local setup:
 
 ### Home page - your collection
 
-![Home page - your collection](screenshots\home_your_collection.png)
+![Home page - your collection](screenshots\home_shelf.png)
 
 ### Browse with API
 

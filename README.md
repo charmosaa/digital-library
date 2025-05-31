@@ -8,8 +8,24 @@ App for book browsing and categorization
 
 The primary goal of this project is to create a comprehensive tool for book enthusiasts, enabling easy cataloging, organizing, and tracking of reading progress. The application will allow users to add, view, edit, and delete books, assign them to categories, and monitor their reading status.
 
+
 ---
 
+## So far implemented:
+- book and category model in database
+- book browsing (via API)
+- adding book to 'To Read' collection
+- adding book manualy (for testing)
+---
+## TO DO:
+ - adding book category (for the books from API)
+ - when adding to collection to be able to specify (to-read, in-progress, completed) 
+ - removing from collection
+ - when clicking on the book maybe more info?
+ - maybe more filters for browsing
+ - diagrams and stats for your books
+
+---
 ## Key Features
 
 
@@ -71,7 +87,52 @@ Local setup:
     ```
     *Note: `python-dotenv` will automatically load these variables when `flask run` is executed.*
 
-5.  **Run the Flask Application:**
+---  
+
+5.  **For the first time - init database:**
+    ```bash
+    flask shell
+    ```
+
+    **Than in the shell:**
+    ```bash
+    from app import app, db
+    import os
+    ```
+    and
+
+    ```bash
+    with app.app_context():
+        # we should be the project's root
+        print(f"Current working directory: {os.getcwd()}")
+
+        # this is where 'site.db' will be created
+        db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+        print(f"Database will be created at: {os.path.abspath(db_path)}")
+
+        from models import Category # Import Category model to add sample data
+        db.create_all() # This creates all tables defined in models.py
+
+        # Optional: Add some sample categories
+        c1 = Category(name='Fantasy')
+        c2 = Category(name='Science Fiction')
+        c3 = Category(name='Horror')
+        db.session.add_all([c1, c2, c3])
+        db.session.commit()
+
+        print("Database tables created and sample categories added successfully!")
+    ```
+    After this block click Enter again (should see the prints now) and then exit() to leave the flask shell
+
+---   
+
+6.  **Add no-cover img:**
+    It should be in folder satic named `no_cover.png` it will be shown when a book has no cover picture available from API
+    
+
+---   
+
+7.  **Run the Flask Application:**
     ```bash
     flask run
     ```
@@ -81,7 +142,22 @@ Local setup:
 
 ## Screenshots
 
-*(Screenshots of the application will be added here once development progresses.)*
+### Home page - your collection
+
+![Home page - your collection](screenshots/home_your_collection.png)
+
+### Browse with API
+
+Empty search - browse 20 popular books
+
+![empty search](screenshots/search.png)
+
+### Search results
+
+Example search "Harry Potter"
+
+![search results](screenshots/search_results.png)
+
 
 ---
 

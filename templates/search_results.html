@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; color: #343a40; }
+        h1, h2 { color: #007bff; }
+        .search-form { margin-bottom: 30px; display: flex; gap: 10px; }
+        .search-form input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 16px; }
+        .search-form button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease; }
+        .search-form button:hover { background-color: #0056b3; }
+        .back-link { display: inline-block; margin-top: 20px; color: #007bff; text-decoration: none; font-size: 16px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .book-card { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+        .book-card img { max-width: 100%; height: auto; max-height: 200px; object-fit: contain; border-radius: 4px; margin-bottom: 10px; }
+        .book-card h3 { font-size: 1.2em; margin-top: 0; margin-bottom: 5px; color: #333; }
+        .book-card p { font-size: 0.9em; color: #666; margin-bottom: 5px; }
+        .book-card .add-button { background-color: #28a745; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; margin-top: 10px; transition: background-color 0.3s ease; }
+        .book-card .add-button:hover { background-color: #218838; }
+        .book-card .book-details { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; width: 100%; }
+
+        .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+
+    </style>
+</head>
+<body>
+    <h1>Search for Books</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('search_books') }}" method="GET" class="search-form">
+        <input type="text" name="query" placeholder="Search by title or author..." value="{{ query or '' }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>{{ title_text }} ({{ books|length }} found):</h2> {# Dynamic title based on query #}
+    {% if books %}
+        <div class="book-grid">
+            {% for book in books %}
+                <div class="book-card">
+                    <div class="book-details">
+                        {% if book.thumbnail %}
+                            <img src="{{ book.thumbnail }}" alt="Book Cover">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
+                        {% endif %}
+                        <h3>{{ book.title }}</h3>
+                        <p>Author: {{ book.author }}</p>
+                        {% if book.published_date %}<p>Published: {{ book.published_date }}</p>{% endif %}
+                        {% if book.page_count %}<p>Pages: {{ book.page_count }}</p>{% endif %}
+                    </div>
+                    <form action="{{ url_for('add_from_api') }}" method="POST">
+                        <input type="hidden" name="title" value="{{ book.title }}">
+                        <input type="hidden" name="author" value="{{ book.author }}">
+                        <input type="hidden" name="isbn" value="{{ book.isbn or '' }}">
+                        <input type="hidden" name="description" value="{{ book.description or '' }}">
+                        <input type="hidden" name="published_date" value="{{ book.published_date or '' }}">
+                        <input type="hidden" name="page_count" value="{{ book.page_count or '' }}">
+                        <input type="hidden" name="cover_url" value="{{ book.thumbnail or '' }}">
+                        <button type="submit" class="add-button">Add to My Shelf</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif query %}
+        <p>No books found for your query "{{ query }}".</p>
+    {% else %}
+        <p>No popular books loaded. Try searching above!</p>
+    {% endif %}
+
+    <a href="{{ url_for('home') }}" class="back-link">Back to My Collection</a>
+</body>
+</html>

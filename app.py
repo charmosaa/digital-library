@@ -23,6 +23,7 @@ migrate = Migrate(app, db)
 def home():
     status_filter = request.args.get('status_filter')
     only_favorites = request.args.get('only_favorites') == '1'
+    sort_by = request.args.get('sort_by')
 
     query = Book.query
 
@@ -31,6 +32,18 @@ def home():
 
     if only_favorites:
         query = query.filter_by(is_favorite=True)
+
+    # Sortowanie
+    if sort_by == 'title_asc':
+        query = query.order_by(Book.title.asc())
+    elif sort_by == 'title_desc':
+        query = query.order_by(Book.title.desc())
+    elif sort_by == 'year_desc':
+        query = query.order_by(Book.year_published.desc().nullslast())
+    elif sort_by == 'year_asc':
+        query = query.order_by(Book.year_published.asc().nullslast())
+    elif sort_by == 'favorite':
+        query = query.order_by(Book.is_favorite.desc(), Book.title.asc())
 
     books = query.all()
 
@@ -47,7 +60,8 @@ def home():
         total_books=total_books,
         to_read_count=to_read_count,
         reading_count=reading_count,
-        read_count=read_count
+        read_count=read_count,
+        sort_by = sort_by
     )
 
 

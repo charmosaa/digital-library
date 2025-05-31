@@ -182,8 +182,8 @@ def add_from_api():
                 page_count=page_count,
                 cover_url=cover_url,
                 is_favorite=False,
-                status=0 # Default to "To Read"
-
+                status=0, # Default to "To Read"
+                current_page=0
             )
             db.session.add(new_book)
             db.session.commit()
@@ -221,8 +221,6 @@ def toggle_favorite(book_id):
     return redirect(url_for('home'))
 
 
-
-
 # --- Edit Book Route ---
 @app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
 def edit_book(book_id):
@@ -245,8 +243,10 @@ def edit_book(book_id):
             if new_status == 1: # If status is "Reading"
                 current_page_str = request.form.get('current_page')
                 book.current_page = int(current_page_str) if current_page_str else 0
-            else: # If status is not "Reading", reset current_page
-                book.current_page = None
+            elif new_status == 2: # If status is not "Reading", reset current_page
+                book.current_page = book.page_count
+            else:
+                book.current_page = 0
 
             db.session.commit()
             flash(f'Book "{book.title}" updated successfully!', 'success')
@@ -260,8 +260,6 @@ def edit_book(book_id):
     
     # For GET request, render the form with existing book data
     return render_template('edit_book.html', book=book, categories=categories)
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -4,26 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Book: {{ book.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; color: #343a40; }
-        h1 { color: #007bff; }
-        form { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; /* Smaller max-width */ margin: 20px auto; }
+        form { background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; margin: 20px auto; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-        input[type="number"], select { width: calc(100% - 22px); /* Adjust for padding and border */ padding: 10px; margin-bottom: 20px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        input[type="submit"] { background-color: #007bff; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; transition: background-color 0.3s ease; }
-        input[type="submit"]:hover { background-color: #0056b3; }
-        .back-link { display: inline-block; margin-top: 20px; color: #007bff; text-decoration: none; font-size: 16px; }
-        .back-link:hover { text-decoration: underline; }
-        .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
-        .message.danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-
+        input[type="number"], select { width: calc(100% - 22px);  padding: 10px; margin-bottom: 20px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        
         #current_page_field {
             display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Update Progress for: {{ book.title }}</h1>
+    <h1>Update Progress for: "{{ book.title }}"</h1>
     <p>Author: {{ book.author }}</p>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -56,20 +49,20 @@
 
         <div id="current_page_field">
             <label for="current_page">Current Page:</label>
-            
+        
+            <input type="number"
+                id="current_page"
+                name="current_page"
+                value="{{ book.current_page or '' }}"
+                min="1"
+                {% if book.page_count %}
+                max="{{ book.page_count - 1 }}"
+                {% endif %}>
         </div>
-        <input type="number"
-            id="current_page"
-            name="current_page"
-            value="{{ book.current_page or '' }}"
-            min="1"
-            {% if book.page_count %}
-            max="{{ book.page_count - 1 }}"
-            {% endif %}>
 
         <input type="submit" value="Save Changes">
     </form>
-    <a href="{{ url_for('home') }}" class="back-link">Back to My Collection</a>
+    <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>
 
     <script>
         function toggleCurrentPageField() {

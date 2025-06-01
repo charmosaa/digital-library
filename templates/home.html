@@ -418,7 +418,7 @@
                         <p>Author: {{ book.author }}</p>
                         {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}
                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
-                        {% if book.page_count %}<p>Pages:  {{ book.current_page }}/{{ book.page_count }}</p>{% endif %}
+                        <p>Pages:  {{ book.current_page }}/{% if book.page_count %}{{ book.page_count }}{% endif %} </p>
                     </div>
 
                     <div class="book-actions">

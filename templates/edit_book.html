@@ -56,8 +56,16 @@
 
         <div id="current_page_field">
             <label for="current_page">Current Page:</label>
-            <input type="number" id="current_page" name="current_page" value="{{ book.current_page or '' }}" min="0">
+            
         </div>
+        <input type="number"
+            id="current_page"
+            name="current_page"
+            value="{{ book.current_page or '' }}"
+            min="1"
+            {% if book.page_count %}
+            max="{{ book.page_count - 1 }}"
+            {% endif %}>
 
         <input type="submit" value="Save Changes">
     </form>

@@ -2,7 +2,7 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
-# placeholder, real object initialized in app.py 
+# placeholder, real object initialized in app.py
 db = SQLAlchemy()
 
 
@@ -13,8 +13,8 @@ class Book(db.Model):
     author = db.Column(db.String(255), nullable=False)
     isbn = db.Column(db.String(20), unique=True, nullable=True) # should be unique
     year_published = db.Column(db.Integer, nullable=True)
-    publisher = db.Column(db.String(255), nullable=True)
-    description = db.Column(db.Text, nullable=True)
+    publisher = db.Column(db.String(255), nullable=True) # Możemy go usunąć, jeśli Anna's Archive go nie dostarcza
+    description = db.Column(db.Text, nullable=True) # Podobnie, jeśli nie jest łatwo dostępny
     page_count = db.Column(db.Integer, nullable=True)
     cover_url = db.Column(db.String(500), nullable=True) # cover img link
     # Read status: 0 - To do, 1 - During, 2 - Finished
@@ -28,6 +28,11 @@ class Book(db.Model):
     # relation to Category
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category = db.relationship('Category', backref='books')
+
+    # Nowe pola dla Anna's Archive
+    md5 = db.Column(db.String(32), unique=True, nullable=True) # MD5 z Anna's Archive, do identyfikacji i pobierania
+    pdf_path = db.Column(db.String(500), nullable=True) # Ścieżka do zapisanego pliku PDF
+    file_format = db.Column(db.String(10), nullable=True) # np. 'pdf', 'epub'
 
     def __repr__(self):
         return f"Book('{self.title}', '{self.author}', '{self.status}')"

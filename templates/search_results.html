@@ -11,12 +11,15 @@
         .book-card .add-button:hover { background-color: #218838; }
         .book-card .book-details { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; width: 100%; }
 
-        .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+        .message {padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid transparent;}
+        .message.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .message.info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        .message.danger { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
 
     </style>
 </head>
 <body>
-    <h1>Search for Books</h1>
+    <h1>Search for Books on Anna's Archive (PDFs)</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -27,43 +30,43 @@
     {% endwith %}
 
     <form action="{{ url_for('search_books') }}" method="GET" class="search-form">
-        <input type="text" name="query" placeholder="Search by title or author..." value="{{ query or '' }}">
+        <input type="text" name="query" placeholder="Search by title, author, ISBN..." value="{{ query or '' }}">
         <button type="submit">Search</button>
     </form>
 
-    <h2>{{ title_text }} ({{ books|length }} found):</h2> {# Dynamic title based on query #}
+    <h2>{{ title_text }} ({{ books|length }} found):</h2>
     {% if books %}
         <div class="book-grid">
             {% for book in books %}
                 <div class="book-card">
                     <div class="book-details">
-                        {% if book.thumbnail %}
-                            <img src="{{ book.thumbnail }}" alt="Book Cover">
+                        {% if book.cover_url %}
+                            <img src="{{ book.cover_url }}" alt="Book Cover">
                         {% else %}
-                            <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
+                            <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover Available">
                         {% endif %}
                         <h3>{{ book.title }}</h3>
                         <p>Author: {{ book.author }}</p>
-                        {% if book.published_date %}<p>Published: {{ book.published_date }}</p>{% endif %}
-                        {% if book.page_count %}<p>Pages: {{ book.page_count }}</p>{% endif %}
+                        {% if book.year %}<p>Year: {{ book.year }}</p>{% endif %}
+                        <p>Format: {{ book.file_format | upper }}</p>
                     </div>
-                    <form action="{{ url_for('add_from_api') }}" method="POST">
+                    <form action="{{ url_for('add_from_annas_archive') }}" method="POST">
                         <input type="hidden" name="title" value="{{ book.title }}">
                         <input type="hidden" name="author" value="{{ book.author }}">
-                        <input type="hidden" name="isbn" value="{{ book.isbn or '' }}">
-                        <input type="hidden" name="description" value="{{ book.description or '' }}">
-                        <input type="hidden" name="published_date" value="{{ book.published_date or '' }}">
-                        <input type="hidden" name="page_count" value="{{ book.page_count or '' }}">
-                        <input type="hidden" name="cover_url" value="{{ book.thumbnail or '' }}">
-                        <button type="submit" class="add-button">Add to My Shelf</button>
+                        <input type="hidden" name="year" value="{{ book.year or '' }}">
+                        <input type="hidden" name="cover_url" value="{{ book.cover_url or '' }}">
+                        <input type="hidden" name="md5" value="{{ book.md5 }}">
+                        <input type="hidden" name="file_format" value="{{ book.file_format or 'pdf' }}">
+                         <input type="hidden" name="query" value="{{ query or '' }}"> <!-- Aby móc wrócić do wyszukiwania w razie błędu -->
+                        <button type="submit" class="add-button">Add PDF to My Shelf</button>
                     </form>
                 </div>
             {% endfor %}
         </div>
     {% elif query %}
-        <p>No books found for your query "{{ query }}".</p>
+        <p>No PDF books found for your query "{{ query }}". Try a different search.</p>
     {% else %}
-        <p>No popular books loaded. Try searching above!</p>
+        <!-- No need for this message if search requires query -->
     {% endif %}
 
     <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>

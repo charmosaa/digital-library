@@ -101,11 +101,13 @@
                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
                         <p>Pages:  {{ book.current_page }}/{% if book.page_count %}{{ book.page_count }}{% endif %} </p>
                     </div>
-
                     <div class="book-actions">
                         <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-button">Status</a>
+                        {% if book.pdf_path %}
+                            <a href="{{ url_for('read_book', book_id=book.id) }}" class="button-link" style="background-color: #17a2b8;" target="_blank">Read Book</a>
+                        {% endif %}
                         <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book?');">Remove</button>
+                            <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book and its PDF?');">Remove</button>
                         </form>
                         <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
                             <button type="submit" style="background: none; border: none; font-size: 1.3em; cursor: pointer;">

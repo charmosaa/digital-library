@@ -10,7 +10,7 @@
 
     <div style="position: absolute; top: 20px; right: 30px;">
         {% if current_user.is_authenticated %}
-            <span style="margin-right: 15px;">Witaj, <strong>{{ current_user.username }}</strong></span>
+            <span style="margin-right: 15px;">Welcome, <strong>{{ current_user.username }}</strong></span>
             <a href="{{ url_for('logout') }}" style="text-decoration: none; background-color: #dc3545; color: white; padding: 8px 12px; border-radius: 5px;">Log out</a>
         {% else %}
             <a href="{{ url_for('login') }}" style="text-decoration: none; background-color: #007bff; color: white; padding: 8px 12px; border-radius: 5px; margin-right: 8px;">Log in</a>
@@ -137,19 +137,19 @@
 
     <div id="loginPopup" class="login-popup-overlay">
       <div class="login-popup-box">
-        <p style="margin-bottom:20px;">You have to log in to add books!</p>
+        <p style="margin-bottom:20px;">You must be logged in to add a book!</p>
         <a href="/login" class="login-popup-button">Log In</a>
         <button onclick="closePopup()" class="login-popup-close">Cancel</button>
       </div>
     </div>
 
     <script>
-      const userIsAuthenticated = {{ current_user.is_authenticated|lower }};
+      const userIsAuthenticated = {{ current_user.is_authenticated|tojson }};
 
       document.getElementById("addBookBtn").addEventListener("click", function(event) {
         event.preventDefault();
         if (userIsAuthenticated) {
-          window.location.href = "/add";
+          window.location.href = "{{ url_for('add_book') }}";
         } else {
           document.getElementById("loginPopup").style.display = "block";
         }
@@ -159,6 +159,7 @@
         document.getElementById("loginPopup").style.display = "none";
       }
     </script>
+
 
 
 

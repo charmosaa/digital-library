@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+
+    <div style="position: absolute; top: 20px; right: 30px;">
+        {% if current_user.is_authenticated %}
+            <span style="margin-right: 15px;">Witaj, <strong>{{ current_user.username }}</strong></span>
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; background-color: #dc3545; color: white; padding: 8px 12px; border-radius: 5px;">Log out</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" style="text-decoration: none; background-color: #007bff; color: white; padding: 8px 12px; border-radius: 5px; margin-right: 8px;">Log in</a>
+            <a href="{{ url_for('register') }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 8px 12px; border-radius: 5px;">Register</a>
+        {% endif %}
+    </div>
+
     <h1>My Shelf</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -22,7 +33,7 @@
         <button type="submit">Search API</button>
     </form>
 
-    <p><a href="{{ url_for('add_book') }}" class="button-link">Add Book Manually</a></p>
+    <button id="addBookBtn" class="add-button">Add Book Manually</button>
 
     <form method="GET" action="{{ url_for('home') }}" class="status-filter-form" id="filterForm" style="flex-direction: column; align-items: flex-start; gap: 10px;">
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -125,5 +136,33 @@
     {% else %}
         <p>No books in your collection. Add the first one!</p>
     {% endif %}
+
+    <div id="loginPopup" class="login-popup-overlay">
+      <div class="login-popup-box">
+        <p style="margin-bottom:20px;">Musisz się zalogować, aby dodać książkę!</p>
+        <a href="/login" class="login-popup-button">Log In</a>
+        <button onclick="closePopup()" class="login-popup-close">Cancel</button>
+      </div>
+    </div>
+
+    <script>
+      const userIsAuthenticated = {{ current_user.is_authenticated|lower }};
+
+      document.getElementById("addBookBtn").addEventListener("click", function(event) {
+        event.preventDefault();
+        if (userIsAuthenticated) {
+          window.location.href = "/add";
+        } else {
+          document.getElementById("loginPopup").style.display = "block";
+        }
+      });
+
+      function closePopup() {
+        document.getElementById("loginPopup").style.display = "none";
+      }
+    </script>
+
+
+
 </body>
 </html>

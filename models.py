@@ -1,6 +1,8 @@
 # models.py
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+
 
 # placeholder, real object initialized in app.py
 db = SQLAlchemy()
@@ -25,6 +27,9 @@ class Book(db.Model):
     date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     is_favorite = db.Column(db.Boolean, default=False)
 
+    # realtion to User
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
     # relation to Category
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category = db.relationship('Category', backref='books')
@@ -44,3 +49,11 @@ class Category(db.Model):
 
     def __repr__(self):
         return f"Category('{self.name}')"
+
+#USER model
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+
+    books = db.relationship('Book', backref='owner', lazy=True)

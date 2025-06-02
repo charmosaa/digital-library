@@ -7,9 +7,19 @@ from models import db, Book, Category
 from flask_migrate import Migrate
 import re
 import json
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from models import User
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
 load_dotenv()
 
 app = Flask(__name__)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 
 # --- App Configuration and Database ---
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -40,7 +50,10 @@ def home():
     only_favorites = request.args.get('only_favorites') == '1'
     sort_by = request.args.get('sort_by')
 
-    query = Book.query
+    if current_user.is_authenticated:
+        query = Book.query.filter_by(user_id=current_user.id)
+    else:
+        query = Book.query.filter_by(user_id=None)  # Pokaż tylko książki niezalogowane
 
     if status_filter in ['0', '1', '2']:
         query = query.filter_by(status=int(status_filter))
@@ -48,7 +61,6 @@ def home():
     if only_favorites:
         query = query.filter_by(is_favorite=True)
 
-    # Sortowanie
     if sort_by == 'title_asc':
         query = query.order_by(Book.title.asc())
     elif sort_by == 'title_desc':
@@ -57,17 +69,17 @@ def home():
         query = query.order_by(Book.year_published.desc().nullslast())
     elif sort_by == 'year_asc':
         query = query.order_by(Book.year_published.asc().nullslast())
-    elif sort_by == 'favorite':  # sort by favorite first then by title
+    elif sort_by == 'favorite':
         query = query.order_by(Book.is_favorite.desc(), Book.title.asc())
-    else:  # Domyślne sortowanie, jeśli żadne nie jest wybrane
+    else:
         query = query.order_by(Book.date_added.desc())
 
     books = query.all()
 
-    total_books = Book.query.count()
-    to_read_count = Book.query.filter_by(status=0).count()
-    reading_count = Book.query.filter_by(status=1).count()
-    read_count = Book.query.filter_by(status=2).count()
+    total_books = query.count()
+    to_read_count = query.filter_by(status=0).count()
+    reading_count = query.filter_by(status=1).count()
+    read_count = query.filter_by(status=2).count()
 
     return render_template(
         'home.html',
@@ -82,14 +94,23 @@ def home():
     )
 
 
+
 @app.route('/add_book', methods=['GET', 'POST'])
+@login_required
 def add_book():
+    if not current_user.is_authenticated:
+        if request.method == 'POST':
+            return jsonify({'error': 'unauthenticated'}), 401
+        else:
+            return render_template('add_book.html', show_login_popup=True)
+
+
     if request.method == 'POST':
         title = request.form['title']
         author = request.form['author']
         category_id = request.form.get('category_id')  # Can be None
 
-        new_book = Book(title=title, author=author)
+        new_book = Book(title=title, author=author, user_id=current_user.id)
         if category_id:
             new_book.category_id = int(category_id) if category_id else None  # Upewnij się, że konwertujesz na int
 
@@ -205,6 +226,7 @@ def are_strings_similar(s1, s2):  # Definicja, jeśli jeszcze jej nie masz globa
 
 
 @app.route('/add_from_annas_archive', methods=['POST'])
+@login_required
 def add_from_annas_archive():
     original_title = request.form['title']
     original_author = request.form['author']
@@ -329,7 +351,7 @@ def add_from_annas_archive():
             print(f"File for '{book_title}' saved: {pdf_full_path_final}, Size: {os.path.getsize(pdf_full_path_final)}")
             new_book_obj = Book(title=book_title, author=book_author, year_published=year_p,
                                 cover_url=book_cover_url, md5=book_md5, pdf_path=pdf_full_path_final,
-                                file_format=book_file_format, status=0)
+                                file_format=book_file_format, status=0,user_id=current_user.id)
             db.session.add(new_book_obj)
             db.session.commit()
             return True, book_title  # Zwróć pobrany tytuł dla komunikatu
@@ -569,6 +591,47 @@ def edit_book(book_id):
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
     return render_template('book_detail.html', book=book)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if User.query.filter_by(username=username).first():
+            flash("Nazwa użytkownika już istnieje!", 'user_exists')
+            return redirect(url_for('register'))
+
+        hashed_pw = generate_password_hash(password)
+        new_user = User(username=username, password=hashed_pw)
+        db.session.add(new_user)
+        db.session.commit()
+        flash("Rejestracja zakończona sukcesem. Zaloguj się.", 'success')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and check_password_hash(user.password, request.form['password']):
+            login_user(user)
+            flash("Zalogowano pomyślnie!", 'success')
+            return redirect(url_for('home'))
+        flash("Konto nie istnieje!", 'no_user')
+        return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Wylogowano.", 'info')
+    return redirect(url_for('home'))
 
 
 if __name__ == '__main__':

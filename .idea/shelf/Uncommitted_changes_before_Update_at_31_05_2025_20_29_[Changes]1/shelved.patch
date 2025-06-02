@@ -1,0 +1,105 @@
+Index: templates/home.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>My Digital Library</title>\r\n    <style>\r\n        body {\r\n            font-family: Arial, sans-serif;\r\n            margin: 20px;\r\n            background-color: #f8f9fa;\r\n            color: #343a40;\r\n        }\r\n\r\n        h1, h2 {\r\n            color: #007bff;\r\n        }\r\n\r\n        .search-form-home {\r\n            margin-bottom: 30px;\r\n            display: flex;\r\n            gap: 10px;\r\n        }\r\n\r\n        .search-form-home input[type=\"text\"] {\r\n            padding: 8px;\r\n            border: 1px solid #ccc;\r\n            border-radius: 4px;\r\n            width: 250px;\r\n        }\r\n\r\n        .search-form-home button {\r\n            padding: 8px 15px;\r\n            background-color: #007bff;\r\n            color: white;\r\n            border: none;\r\n            border-radius: 4px;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .search-form-home button:hover {\r\n            background-color: #0056b3;\r\n        }\r\n\r\n        .button-link {\r\n            display: inline-block;\r\n            padding: 10px 20px;\r\n            background-color: #28a745;\r\n            color: white;\r\n            border-radius: 5px;\r\n            text-decoration: none;\r\n            margin-top: 15px;\r\n            font-size: 16px;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .button-link:hover {\r\n            background-color: #218838;\r\n        }\r\n\r\n        .message {\r\n            background-color: #d4edda;\r\n            color: #155724;\r\n            border: 1px solid #c3e6cb;\r\n            padding: 10px;\r\n            margin-bottom: 15px;\r\n            border-radius: 5px;\r\n        }\r\n\r\n        .book-grid {\r\n            display: grid;\r\n            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\r\n            gap: 20px;\r\n            margin-top: 30px;\r\n        }\r\n\r\n        .book-card {\r\n            background-color: #ffffff;\r\n            border: 1px solid #e0e0e0;\r\n            border-radius: 8px;\r\n            box-shadow: 0 4px 8px rgba(0,0,0,0.1);\r\n            padding: 15px;\r\n            text-align: center;\r\n            display: flex;\r\n            flex-direction: column;\r\n            justify-content: space-between;\r\n            align-items: center;\r\n            position: relative;\r\n            padding-top: 50px;\r\n        }\r\n\r\n        .book-badges-top {\r\n            position: absolute;\r\n            top: 10px;\r\n            left: 10px;\r\n            display: flex;\r\n            gap: 8px;\r\n            flex-wrap: wrap;\r\n            z-index: 2;\r\n        }\r\n\r\n        .book-category-badge {\r\n            display: flex;\r\n            gap: 8px;\r\n            flex-wrap: wrap;\r\n        }\r\n\r\n        .category-tag,\r\n        .status-to-read,\r\n        .status-reading,\r\n        .status-read {\r\n            padding: 3px 8px;\r\n            border-radius: 4px;\r\n            font-size: 0.9em;\r\n            font-weight: normal;\r\n            line-height: 1;\r\n            display: inline-block;\r\n            margin-bottom: 5px;\r\n            color: white;\r\n        }\r\n\r\n        .category-tag {\r\n            background-color: #6c757d;\r\n        }\r\n\r\n        .status-to-read {\r\n            background-color: #248a94;\r\n        }\r\n\r\n        .status-reading {\r\n            background-color: #ffc107;\r\n            color: black;\r\n        }\r\n\r\n        .status-read {\r\n            background-color: #28a745;\r\n        }\r\n\r\n        .book-card img {\r\n            max-width: 100%;\r\n            height: auto;\r\n            max-height: 200px;\r\n            object-fit: contain;\r\n            border-radius: 4px;\r\n            margin-bottom: 10px;\r\n        }\r\n\r\n        .book-card h3 {\r\n            font-size: 1.2em;\r\n            margin-top: 0;\r\n            margin-bottom: 5px;\r\n            color: #333;\r\n        }\r\n\r\n        .book-card p {\r\n            font-size: 0.9em;\r\n            color: #666;\r\n            margin-bottom: 5px;\r\n        }\r\n\r\n        .book-card .book-details {\r\n            flex-grow: 1;\r\n            display: flex;\r\n            flex-direction: column;\r\n            justify-content: flex-start;\r\n            align-items: center;\r\n            width: 100%;\r\n        }\r\n\r\n        .book-actions {\r\n            display: flex;\r\n            gap: 10px;\r\n            margin-top: 10px;\r\n            width: 100%;\r\n            justify-content: center;\r\n        }\r\n\r\n        .edit-button {\r\n            background-color: #ffc107;\r\n            color: white;\r\n            padding: 8px 15px;\r\n            border: none;\r\n            border-radius: 5px;\r\n            cursor: pointer;\r\n            text-decoration: none;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .edit-button:hover {\r\n            background-color: #e0a800;\r\n        }\r\n\r\n        .delete-button {\r\n            background-color: #dc3545;\r\n            color: white;\r\n            padding: 8px 15px;\r\n            border: none;\r\n            border-radius: 5px;\r\n            cursor: pointer;\r\n            text-decoration: none;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .delete-button:hover {\r\n            background-color: #c82333;\r\n        }\r\n\r\n        .status-filter-form {\r\n            margin: 15px 0;\r\n            display: flex;\r\n            align-items: center;\r\n            gap: 5px;\r\n        }\r\n\r\n        .status-filter-form label {\r\n            font-weight: bold;\r\n        }\r\n\r\n        .status-filter-form select {\r\n            padding: 8px 12px;\r\n            border: 1px solid #ccc;\r\n            border-radius: 2px;\r\n            background-color: #ffffff;\r\n            font-size: 1em;\r\n            color: #343a40;\r\n            cursor: pointer;\r\n            transition: border-color 0.2s ease;\r\n        }\r\n\r\n        .status-filter-form select:hover,\r\n        .status-filter-form select:focus {\r\n            border-color: #007bff;\r\n            outline: none;\r\n        }\r\n\r\n    </style>\r\n</head>\r\n<body>\r\n    <h1>My Shelf</h1>\r\n\r\n    {% with messages = get_flashed_messages(with_categories=true) %}\r\n        {% if messages %}\r\n            {% for category, message in messages %}\r\n                <div class=\"message {{ category }}\">{{ message }}</div>\r\n            {% endfor %}\r\n        {% endif %}\r\n    {% endwith %}\r\n\r\n    <form action=\"{{ url_for('search_books') }}\" method=\"GET\" class=\"search-form-home\">\r\n        <input type=\"text\" name=\"query\" placeholder=\"Search books via API...\" >\r\n        <button type=\"submit\">Search API</button>\r\n    </form>\r\n\r\n    <p><a href=\"{{ url_for('add_book') }}\" class=\"button-link\">Add Book Manually</a></p>\r\n\r\n    <form method=\"GET\" action=\"{{ url_for('home') }}\" class=\"status-filter-form\">\r\n        <label for=\"status_filter\">Filter by status:</label>\r\n        <select name=\"status_filter\" id=\"status_filter\" onchange=\"this.form.submit()\">\r\n            <option value=\"\">All books</option>\r\n            <option value=\"0\" {% if status_filter == '0' %}selected{% endif %}>To Read</option>\r\n            <option value=\"1\" {% if status_filter == '1' %}selected{% endif %}>Reading</option>\r\n            <option value=\"2\" {% if status_filter == '2' %}selected{% endif %}>Read</option>\r\n        </select>\r\n\r\n        <label style=\"margin-left: 10px;\">\r\n        <input type=\"checkbox\" name=\"only_favorites\" value=\"1\" {% if only_favorites %}checked{% endif %} onchange=\"this.form.submit()\">\r\n        Only favorites\r\n        </label>\r\n    </form>\r\n\r\n    {% if books %}\r\n        <h2>Your Books:</h2>\r\n        <div style=\"margin: 15px 0; font-weight: bold; font-size: 1em;\">\r\n            Total books: {{ total_books }} |\r\n            To Read: {{ to_read_count }} |\r\n            Reading: {{ reading_count }} |\r\n            Read: {{ read_count }}\r\n        </div>\r\n\r\n        <div class=\"book-grid\">\r\n            {% for book in books %}\r\n                <div class=\"book-card\">\r\n                    <div class=\"book-badges-top\">\r\n                        <div class=\"book-category-badge\">\r\n                            {% if book.category %}\r\n                                <span class=\"category-tag\">{{ book.category.name }}</span>\r\n                            {% else %}\r\n                                <span class=\"category-tag\">Uncategorized</span>\r\n                            {% endif %}\r\n\r\n                            {% if book.status|int == 0 %}\r\n                                <span class=\"status-to-read\">To Read</span>\r\n                            {% elif book.status|int == 1 %}\r\n                                <span class=\"status-reading\">Reading</span>\r\n                            {% elif book.status|int == 2 %}\r\n                                <span class=\"status-read\">Read</span>\r\n                            {% endif %}\r\n                        </div>\r\n                    </div>\r\n\r\n                    <div class=\"book-details\">\r\n                        {% if book.cover_url %}\r\n                            <img src=\"{{ book.cover_url }}\" alt=\"Book Cover\">\r\n                        {% else %}\r\n                            <img src=\"{{ url_for('static', filename='no_cover.png') }}\" alt=\"No Cover\">\r\n                        {% endif %}\r\n                        <h3>{{ book.title }}</h3>\r\n                        <p>Author: {{ book.author }}</p>\r\n                        {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}\r\n                        {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}\r\n                    </div>\r\n\r\n                    <div class=\"book-actions\">\r\n                        <a href=\"{{ url_for('edit_book', book_id=book.id) }}\" class=\"edit-button\">Status</a>\r\n                        <form action=\"{{ url_for('remove_book', book_id=book.id) }}\" method=\"POST\" style=\"display:inline;\">\r\n                            <button type=\"submit\" class=\"delete-button\" onclick=\"return confirm('Are you sure you want to remove this book?');\">Remove</button>\r\n                        </form>\r\n                        <form action=\"{{ url_for('toggle_favorite', book_id=book.id) }}\" method=\"POST\" style=\"position: absolute; top: 10px; right: 10px;\">\r\n                            <button type=\"submit\" style=\"background: none; border: none; font-size: 1.3em; cursor: pointer;\">\r\n                                {% if book.is_favorite %}\r\n                                    ⭐\r\n                                {% else %}\r\n                                    ☆\r\n                                {% endif %}\r\n                            </button>\r\n                        </form>\r\n                    </div>\r\n                </div>\r\n            {% endfor %}\r\n        </div>\r\n    {% else %}\r\n        <p>No books in your collection. Add the first one!</p>\r\n    {% endif %}\r\n</body>\r\n</html>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/home.html b/templates/home.html
+--- a/templates/home.html	(revision 88d2e676cd0228d95b0939437c18da7b4a094379)
++++ b/templates/home.html	(date 1748715685510)
+@@ -4,6 +4,7 @@
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>My Digital Library</title>
++    <link rel="icon" href="data:,"> <!-- Pusty favicon zapobiega 404 error -->
+     <style>
+         body {
+             font-family: Arial, sans-serif;
+@@ -253,20 +254,27 @@
+ 
+     <p><a href="{{ url_for('add_book') }}" class="button-link">Add Book Manually</a></p>
+ 
+-    <form method="GET" action="{{ url_for('home') }}" class="status-filter-form">
+-        <label for="status_filter">Filter by status:</label>
+-        <select name="status_filter" id="status_filter" onchange="this.form.submit()">
+-            <option value="">All books</option>
+-            <option value="0" {% if status_filter == '0' %}selected{% endif %}>To Read</option>
+-            <option value="1" {% if status_filter == '1' %}selected{% endif %}>Reading</option>
+-            <option value="2" {% if status_filter == '2' %}selected{% endif %}>Read</option>
+-        </select>
+-
+-        <label style="margin-left: 10px;">
+-        <input type="checkbox" name="only_favorites" value="1" {% if only_favorites %}checked{% endif %} onchange="this.form.submit()">
+-        Only favorites
+-        </label>
+-    </form>
++    <!-- Rozdzielone formularze filtrowania -->
++    <div class="status-filter-form">
++        <form method="GET" action="{{ url_for('home') }}">
++            <label for="status_filter">Filter by status:</label>
++            <select name="status_filter" id="status_filter" onchange="this.form.submit()">
++                <option value="">All books</option>
++                <option value="0" {% if status_filter == '0' %}selected{% endif %}>To Read</option>
++                <option value="1" {% if status_filter == '1' %}selected{% endif %}>Reading</option>
++                <option value="2" {% if status_filter == '2' %}selected{% endif %}>Read</option>
++            </select>
++        </form>
++        <form method="GET" action="{{ url_for('home') }}" style="margin-left: 10px;">
++            <input type="hidden" name="status_filter" value="{{ status_filter }}">
++            <label>
++                <input type="checkbox" name="only_favorites" value="1"
++                    {% if only_favorites %}checked{% endif %}
++                    onchange="this.form.submit()">
++                Only favorites
++            </label>
++        </form>
++    </div>
+ 
+     {% if books %}
+         <h2>Your Books:</h2>
+@@ -315,15 +323,11 @@
+                         <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" style="display:inline;">
+                             <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book?');">Remove</button>
+                         </form>
+-                        <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
+-                            <button type="submit" style="background: none; border: none; font-size: 1.3em; cursor: pointer;">
+-                                {% if book.is_favorite %}
+-                                    ⭐
+-                                {% else %}
+-                                    ☆
+-                                {% endif %}
+-                            </button>
+-                        </form>
++                        <!-- Przycisk ulubionych bez formularza -->
++                        <button type="button" class="favorite-btn" data-book-id="{{ book.id }}"
++                                style="background: none; border: none; font-size: 1.3em; cursor: pointer; position: absolute; top: 10px; right: 10px;">
++                            {% if book.is_favorite %}⭐{% else %}☆{% endif %}
++                        </button>
+                     </div>
+                 </div>
+             {% endfor %}
+@@ -331,5 +335,21 @@
+     {% else %}
+         <p>No books in your collection. Add the first one!</p>
+     {% endif %}
++    {% for book in books %}
++        <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST"
++              id="fav-form-{{ book.id }}" style="display: none;">
++        </form>
++    {% endfor %}
++
++    <script>
++        // Obsługa przycisków ulubionych
++        document.querySelectorAll('.favorite-btn').forEach(btn => {
++            btn.addEventListener('click', () => {
++                const bookId = btn.dataset.bookId;
++                const form = document.getElementById(`fav-form-${bookId}`);
++                form.submit();
++            });
++        });
++    </script>
+ </body>
+-</html>
++</html>
+\ No newline at end of file

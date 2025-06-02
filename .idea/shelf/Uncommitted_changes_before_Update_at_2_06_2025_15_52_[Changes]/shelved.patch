@@ -1,0 +1,576 @@
+Index: templates/home.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>My Digital Library</title>\r\n    <style>\r\n        body {\r\n            font-family: Arial, sans-serif;\r\n            margin: 20px;\r\n            background-color: #f8f9fa;\r\n            color: #343a40;\r\n        }\r\n\r\n        h1, h2 {\r\n            color: #007bff;\r\n        }\r\n\r\n        .search-form-home {\r\n            margin-bottom: 30px;\r\n            display: flex;\r\n            gap: 10px;\r\n        }\r\n\r\n        .search-form-home input[type=\"text\"] {\r\n            padding: 8px;\r\n            border: 1px solid #ccc;\r\n            border-radius: 4px;\r\n            width: 250px;\r\n        }\r\n\r\n        .search-form-home button {\r\n            padding: 8px 15px;\r\n            background-color: #007bff;\r\n            color: white;\r\n            border: none;\r\n            border-radius: 4px;\r\n            cursor: pointer;\r\n        }\r\n\r\n        .search-form-home button:hover {\r\n            background-color: #0056b3;\r\n        }\r\n\r\n        .button-link {\r\n            display: inline-block;\r\n            padding: 10px 20px;\r\n            background-color: #28a745;\r\n            color: white;\r\n            border-radius: 5px;\r\n            text-decoration: none;\r\n            margin-top: 15px;\r\n            font-size: 16px;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .button-link:hover {\r\n            background-color: #218838;\r\n        }\r\n\r\n        .message {\r\n            background-color: #d4edda;\r\n            color: #155724;\r\n            border: 1px solid #c3e6cb;\r\n            padding: 10px;\r\n            margin-bottom: 15px;\r\n            border-radius: 5px;\r\n        }\r\n\r\n        .book-grid {\r\n            display: grid;\r\n            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));\r\n            gap: 20px;\r\n            margin-top: 30px;\r\n        }\r\n\r\n        .book-card {\r\n            background-color: #ffffff;\r\n            border: 1px solid #e0e0e0;\r\n            border-radius: 8px;\r\n            box-shadow: 0 4px 8px rgba(0,0,0,0.1);\r\n            padding: 15px;\r\n            text-align: center;\r\n            display: flex;\r\n            flex-direction: column;\r\n            justify-content: space-between;\r\n            align-items: center;\r\n            position: relative;\r\n            padding-top: 50px;\r\n        }\r\n\r\n        .book-badges-top {\r\n            position: absolute;\r\n            top: 10px;\r\n            left: 10px;\r\n            display: flex;\r\n            gap: 8px;\r\n            flex-wrap: wrap;\r\n            z-index: 2;\r\n        }\r\n\r\n        .book-category-badge {\r\n            display: flex;\r\n            gap: 8px;\r\n            flex-wrap: wrap;\r\n        }\r\n\r\n        .category-tag,\r\n        .status-to-read,\r\n        .status-reading,\r\n        .status-read {\r\n            padding: 3px 8px;\r\n            border-radius: 4px;\r\n            font-size: 0.9em;\r\n            font-weight: normal;\r\n            line-height: 1;\r\n            display: inline-block;\r\n            margin-bottom: 5px;\r\n            color: white;\r\n        }\r\n\r\n        .category-tag {\r\n            background-color: #6c757d;\r\n        }\r\n\r\n        .status-to-read {\r\n            background-color: #248a94;\r\n        }\r\n\r\n        .status-reading {\r\n            background-color: #ffc107;\r\n            color: black;\r\n        }\r\n\r\n        .status-read {\r\n            background-color: #28a745;\r\n        }\r\n\r\n        .book-card img {\r\n            max-width: 100%;\r\n            height: auto;\r\n            max-height: 200px;\r\n            object-fit: contain;\r\n            border-radius: 4px;\r\n            margin-bottom: 10px;\r\n        }\r\n\r\n        .book-card h3 {\r\n            font-size: 1.2em;\r\n            margin-top: 0;\r\n            margin-bottom: 5px;\r\n            color: #333;\r\n        }\r\n\r\n        .book-card p {\r\n            font-size: 0.9em;\r\n            color: #666;\r\n            margin-bottom: 5px;\r\n        }\r\n\r\n        .book-card .book-details {\r\n            flex-grow: 1;\r\n            display: flex;\r\n            flex-direction: column;\r\n            justify-content: flex-start;\r\n            align-items: center;\r\n            width: 100%;\r\n        }\r\n\r\n        .book-actions {\r\n            display: flex;\r\n            gap: 10px;\r\n            margin-top: 10px;\r\n            width: 100%;\r\n            justify-content: center;\r\n        }\r\n\r\n        .edit-button {\r\n            background-color: #ffc107;\r\n            color: white;\r\n            padding: 8px 15px;\r\n            border: none;\r\n            border-radius: 5px;\r\n            cursor: pointer;\r\n            text-decoration: none;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .edit-button:hover {\r\n            background-color: #e0a800;\r\n        }\r\n\r\n        .delete-button {\r\n            background-color: #dc3545;\r\n            color: white;\r\n            padding: 8px 15px;\r\n            border: none;\r\n            border-radius: 5px;\r\n            cursor: pointer;\r\n            text-decoration: none;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .delete-button:hover {\r\n            background-color: #c82333;\r\n        }\r\n\r\n        .status-filter-form {\r\n            margin: 15px 0;\r\n            display: flex;\r\n            align-items: center;\r\n            gap: 5px;\r\n        }\r\n\r\n        .status-filter-form label {\r\n            font-weight: bold;\r\n        }\r\n\r\n        .status-filter-form select {\r\n            padding: 8px 12px;\r\n            border: 1px solid #ccc;\r\n            border-radius: 2px;\r\n            background-color: #ffffff;\r\n            font-size: 1em;\r\n            color: #343a40;\r\n            cursor: pointer;\r\n            transition: border-color 0.2s ease;\r\n        }\r\n\r\n        .status-filter-form select:hover,\r\n        .status-filter-form select:focus {\r\n            border-color: #007bff;\r\n            outline: none;\r\n        }\r\n\r\n        .filter-form {\r\n            display: flex;\r\n            flex-wrap: wrap;\r\n            align-items: center;\r\n            gap: 10px;\r\n            margin: 15px 0;\r\n        }\r\n\r\n        .filter-form label {\r\n            font-weight: bold;\r\n        }\r\n\r\n        .filter-form select {\r\n            padding: 8px 12px;\r\n            border: 1px solid #ccc;\r\n            border-radius: 4px;\r\n            background-color: #ffffff;\r\n            font-size: 1em;\r\n            color: #343a40;\r\n            cursor: pointer;\r\n            transition: border-color 0.2s ease;\r\n        }\r\n\r\n        .filter-form select:hover,\r\n        .filter-form select:focus {\r\n            border-color: #007bff;\r\n            outline: none;\r\n        }\r\n\r\n        .filter-form button {\r\n            padding: 8px 15px;\r\n            background-color: #007bff;\r\n            color: white;\r\n            border: none;\r\n            border-radius: 4px;\r\n            cursor: pointer;\r\n            font-size: 1em;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .filter-form button:hover {\r\n            background-color: #0056b3;\r\n        }\r\n\r\n\r\n        .filter-form {\r\n            display: flex;\r\n            flex-wrap: wrap;\r\n            align-items: center;\r\n            gap: 10px;\r\n            margin: 15px 0;\r\n        }\r\n\r\n        .filter-form label {\r\n            font-weight: bold;\r\n        }\r\n\r\n        .filter-form select {\r\n            padding: 8px 12px;\r\n            border: 1px solid #ccc;\r\n            border-radius: 4px;\r\n            background-color: #ffffff;\r\n            font-size: 1em;\r\n            color: #343a40;\r\n            cursor: pointer;\r\n            transition: border-color 0.2s ease;\r\n        }\r\n\r\n        .filter-form select:hover,\r\n        .filter-form select:focus {\r\n            border-color: #007bff;\r\n            outline: none;\r\n        }\r\n\r\n        .filter-form button {\r\n            padding: 8px 15px;\r\n            background-color: #007bff;\r\n            color: white;\r\n            border: none;\r\n            border-radius: 4px;\r\n            cursor: pointer;\r\n            font-size: 1em;\r\n            transition: background-color 0.3s ease;\r\n        }\r\n\r\n        .filter-form button:hover {\r\n            background-color: #0056b3;\r\n        }\r\n\r\n\r\n    </style>\r\n</head>\r\n<body>\r\n    <h1>My Shelf</h1>\r\n\r\n    {% with messages = get_flashed_messages(with_categories=true) %}\r\n        {% if messages %}\r\n            {% for category, message in messages %}\r\n                <div class=\"message {{ category }}\">{{ message }}</div>\r\n            {% endfor %}\r\n        {% endif %}\r\n    {% endwith %}\r\n\r\n    <form action=\"{{ url_for('search_books') }}\" method=\"GET\" class=\"search-form-home\">\r\n        <input type=\"text\" name=\"query\" placeholder=\"Search books via API...\" >\r\n        <button type=\"submit\">Search API</button>\r\n    </form>\r\n\r\n    <p><a href=\"{{ url_for('add_book') }}\" class=\"button-link\">Add Book Manually</a></p>\r\n\r\n    <form method=\"GET\" action=\"{{ url_for('home') }}\" class=\"status-filter-form\" id=\"filterForm\" style=\"flex-direction: column; align-items: flex-start; gap: 10px;\">\r\n        <div style=\"display: flex; gap: 10px; align-items: center;\">\r\n            <label for=\"status_filter\">Filter by status:</label>\r\n            <select name=\"status_filter\" id=\"status_filter\" onchange=\"this.form.submit()\">\r\n                <option value=\"\">All books</option>\r\n                <option value=\"0\" {% if status_filter == '0' %}selected{% endif %}>To Read</option>\r\n                <option value=\"1\" {% if status_filter == '1' %}selected{% endif %}>Reading</option>\r\n                <option value=\"2\" {% if status_filter == '2' %}selected{% endif %}>Read</option>\r\n            </select>\r\n\r\n            <label>\r\n                <input type=\"checkbox\" name=\"only_favorites\" value=\"1\" {% if only_favorites %}checked{% endif %} onchange=\"this.form.submit()\">\r\n                Only favorites\r\n            </label>\r\n        </div>\r\n\r\n        <div style=\"margin-top: 5px;\">\r\n            <label for=\"sort_by\">Sort by:</label>\r\n            <select name=\"sort_by\" id=\"sort_by\" onchange=\"document.getElementById('filterForm').submit()\">\r\n                <option value=\"title_asc\" {% if sort_by == 'title_asc' %}selected{% endif %}>Title A–Z</option>\r\n                <option value=\"title_desc\" {% if sort_by == 'title_desc' %}selected{% endif %}>Title Z–A</option>\r\n                <option value=\"year_desc\" {% if sort_by == 'year_desc' %}selected{% endif %}>Newest</option>\r\n                <option value=\"year_asc\" {% if sort_by == 'year_asc' %}selected{% endif %}>Oldest</option>\r\n            </select>\r\n        </div>\r\n    </form>\r\n\r\n\r\n\r\n    {% if books %}\r\n        <h2>Your Books:</h2>\r\n        <div style=\"margin: 15px 0; font-weight: bold; font-size: 1em;\">\r\n            Total books: {{ total_books }} |\r\n            To Read: {{ to_read_count }} |\r\n            Reading: {{ reading_count }} |\r\n            Read: {{ read_count }}\r\n        </div>\r\n\r\n        <div class=\"book-grid\">\r\n            {% for book in books %}\r\n                <div class=\"book-card\">\r\n                    <div class=\"book-badges-top\">\r\n                        <div class=\"book-category-badge\">\r\n                            {% if book.category %}\r\n                                <span class=\"category-tag\">{{ book.category.name }}</span>\r\n                            {% else %}\r\n                                <span class=\"category-tag\">Uncategorized</span>\r\n                            {% endif %}\r\n\r\n                            {% if book.status|int == 0 %}\r\n                                <span class=\"status-to-read\">To Read</span>\r\n                            {% elif book.status|int == 1 %}\r\n                                <span class=\"status-reading\">Reading</span>\r\n                            {% elif book.status|int == 2 %}\r\n                                <span class=\"status-read\">Read</span>\r\n                            {% endif %}\r\n                        </div>\r\n                    </div>\r\n\r\n                    <div class=\"book-details\">\r\n                        {% if book.cover_url %}\r\n                            <a href=\"{{ url_for('book_detail', book_id=book.id) }}\">\r\n                            <img src=\"{{ book.cover_url or url_for('static', filename='no_cover.png') }}\" alt=\"Book Cover\">\r\n                        </a>\r\n                        <a href=\"{{ url_for('book_detail', book_id=book.id) }}\">\r\n\r\n                        </a>\r\n\r\n                        {% else %}\r\n                            <img src=\"{{ url_for('static', filename='no_cover.png') }}\" alt=\"No Cover\">\r\n                        {% endif %}\r\n                        <h3>{{ book.title }}</h3>\r\n                        <p>Author: {{ book.author }}</p>\r\n                        {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}\r\n                        {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}\r\n                        {% if book.page_count %}<p>Pages:  {{ book.current_page }}/{{ book.page_count }}</p>{% endif %}\r\n                    </div>\r\n\r\n                    <div class=\"book-actions\">\r\n                        <a href=\"{{ url_for('edit_book', book_id=book.id) }}\" class=\"edit-button\">Status</a>\r\n                        <form action=\"{{ url_for('remove_book', book_id=book.id) }}\" method=\"POST\" style=\"display:inline;\">\r\n                            <button type=\"submit\" class=\"delete-button\" onclick=\"return confirm('Are you sure you want to remove this book?');\">Remove</button>\r\n                        </form>\r\n                        <form action=\"{{ url_for('toggle_favorite', book_id=book.id) }}\" method=\"POST\" style=\"position: absolute; top: 10px; right: 10px;\">\r\n                            <button type=\"submit\" style=\"background: none; border: none; font-size: 1.3em; cursor: pointer;\">\r\n                                {% if book.is_favorite %}\r\n                                    ⭐\r\n                                {% else %}\r\n                                    ☆\r\n                                {% endif %}\r\n                            </button>\r\n                        </form>\r\n                    </div>\r\n                </div>\r\n            {% endfor %}\r\n        </div>\r\n    {% else %}\r\n        <p>No books in your collection. Add the first one!</p>\r\n    {% endif %}\r\n</body>\r\n</html>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/home.html b/templates/home.html
+--- a/templates/home.html	(revision 1d24802f5b725964f743ff14536c516aac44c233)
++++ b/templates/home.html	(date 1748871217142)
+@@ -322,10 +322,64 @@
+             background-color: #0056b3;
+         }
+ 
++        .popup-modal {
++            display: none;
++            position: fixed;
++            top: 0; left: 0; right: 0; bottom: 0;
++            background: rgba(0,0,0,0.5);
++            z-index: 9999;
++            justify-content: center;
++            align-items: center;
++        }
++        .popup-content {
++            background: white;
++            padding: 30px;
++            border-radius: 10px;
++            text-align: center;
++            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
++            max-width: 400px;
++        }
++        .popup-button {
++            display: inline-block;
++            margin-top: 15px;
++            padding: 10px 20px;
++            background: #007bff;
++            color: white;
++            text-decoration: none;
++            border-radius: 5px;
++        }
++        .popup-button:hover {
++            background: #0056b3;
++        }
++
++
++        .close-button {
++            position: absolute;
++            top: 10px;
++            right: 15px;
++            font-size: 24px;
++            font-weight: bold;
++            color: #aaa;
++            cursor: pointer;
++        }
++        .close-button:hover {
++            color: #000;
++        }
+ 
+     </style>
+ </head>
+ <body>
++
++    <div style="position: absolute; top: 20px; right: 20px;">
++        {% if current_user.is_authenticated %}
++            <span>Zalogowany jako: <strong>{{ current_user.username }}</strong></span>
++            <a href="{{ url_for('logout') }}" class="button-link" style="background-color: #dc3545; margin-left: 10px;">Logout</a>
++        {% else %}
++            <a href="{{ url_for('login') }}" class="button-link">Login</a>
++            <a href="{{ url_for('register') }}" class="button-link" style="background-color: #17a2b8; margin-left: 5px;">Register</a>
++        {% endif %}
++    </div>
++
+     <h1>My Shelf</h1>
+ 
+     {% with messages = get_flashed_messages(with_categories=true) %}
+@@ -374,12 +428,14 @@
+ 
+     {% if books %}
+         <h2>Your Books:</h2>
+-        <div style="margin: 15px 0; font-weight: bold; font-size: 1em;">
+-            Total books: {{ total_books }} |
+-            To Read: {{ to_read_count }} |
+-            Reading: {{ reading_count }} |
+-            Read: {{ read_count }}
+-        </div>
++        {% if current_user.is_authenticated %}
++            <div style="margin: 15px 0; font-weight: bold; font-size: 1em;">
++                Total books: {{ total_books }} |
++                To Read: {{ to_read_count }} |
++                Reading: {{ reading_count }} |
++                Read: {{ read_count }}
++            </div>
++        {% endif %}
+ 
+         <div class="book-grid">
+             {% for book in books %}
+@@ -405,12 +461,8 @@
+                     <div class="book-details">
+                         {% if book.cover_url %}
+                             <a href="{{ url_for('book_detail', book_id=book.id) }}">
+-                            <img src="{{ book.cover_url or url_for('static', filename='no_cover.png') }}" alt="Book Cover">
+-                        </a>
+-                        <a href="{{ url_for('book_detail', book_id=book.id) }}">
+-
+-                        </a>
+-
++                                <img src="{{ book.cover_url or url_for('static', filename='no_cover.png') }}" alt="Book Cover">
++                            </a>
+                         {% else %}
+                             <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
+                         {% endif %}
+@@ -418,7 +470,7 @@
+                         <p>Author: {{ book.author }}</p>
+                         {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}
+                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
+-                        {% if book.page_count %}<p>Pages:  {{ book.current_page }}/{{ book.page_count }}</p>{% endif %}
++                        {% if book.page_count %}<p>Pages: {{ book.current_page }}/{{ book.page_count }}</p>{% endif %}
+                     </div>
+ 
+                     <div class="book-actions">
+@@ -442,5 +494,59 @@
+     {% else %}
+         <p>No books in your collection. Add the first one!</p>
+     {% endif %}
++
++
++<script>
++window.addEventListener('DOMContentLoaded', () => {
++    {% with messages = get_flashed_messages(with_categories=true) %}
++        {% for category, message in messages %}
++            {% if category == 'must_login' %}
++                document.getElementById('loginRequiredModal').style.display = 'flex';
++            {% endif %}
++        {% endfor %}
++    {% endwith %}
++});
++</script>
++
++
++<script>
++window.addEventListener('DOMContentLoaded', () => {
++    {% with messages = get_flashed_messages(with_categories=true) %}
++        {% for category, message in messages %}
++            {% if category == 'must_login' %}
++                document.getElementById('loginRequiredModal').style.display = 'flex';
++            {% endif %}
++        {% endfor %}
++    {% endwith %}
++});
++</script>
++
++
++    <div id="loginRequiredModal" class="popup-modal">
++        <div class="popup-content" style="position: relative;">
++            <span class="close-button" onclick="document.getElementById('loginRequiredModal').style.display='none'">&times;</span>
++            <h2 style="color: #007bff;">Musisz się zalogować</h2>
++            <p>Aby dodać książkę, musisz być zalogowany.</p>
++            <div style="margin-top: 20px;">
++                <a href="{{ url_for('login') }}" class="popup-button">Zaloguj się</a>
++                <a href="{{ url_for('register') }}" class="popup-button" style="background: #17a2b8;">Zarejestruj się</a>
++            </div>
++        </div>
++    </div>
++
++
++
++    <script>
++    window.addEventListener('DOMContentLoaded', () => {
++        {% with messages = get_flashed_messages(with_categories=true) %}
++            {% for category, message in messages %}
++                {% if category == 'must_login' %}
++                    document.getElementById('loginRequiredModal').style.display = 'flex';
++                {% endif %}
++            {% endfor %}
++        {% endwith %}
++    });
++    </script>
++
+ </body>
+ </html>
+Index: templates/search_results.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>Search Results</title>\r\n    <style>\r\n        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f8f9fa; color: #343a40; }\r\n        h1, h2 { color: #007bff; }\r\n        .search-form { margin-bottom: 30px; display: flex; gap: 10px; }\r\n        .search-form input[type=\"text\"] { flex-grow: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; font-size: 16px; }\r\n        .search-form button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease; }\r\n        .search-form button:hover { background-color: #0056b3; }\r\n        .back-link { display: inline-block; margin-top: 20px; color: #007bff; text-decoration: none; font-size: 16px; }\r\n        .back-link:hover { text-decoration: underline; }\r\n\r\n        .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }\r\n        .book-card { background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }\r\n        .book-card img { max-width: 100%; height: auto; max-height: 200px; object-fit: contain; border-radius: 4px; margin-bottom: 10px; }\r\n        .book-card h3 { font-size: 1.2em; margin-top: 0; margin-bottom: 5px; color: #333; }\r\n        .book-card p { font-size: 0.9em; color: #666; margin-bottom: 5px; }\r\n        .book-card .add-button { background-color: #28a745; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; margin-top: 10px; transition: background-color 0.3s ease; }\r\n        .book-card .add-button:hover { background-color: #218838; }\r\n        .book-card .book-details { flex-grow: 1; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; width: 100%; }\r\n\r\n        .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }\r\n\r\n    </style>\r\n</head>\r\n<body>\r\n    <h1>Search for Books</h1>\r\n\r\n    {% with messages = get_flashed_messages(with_categories=true) %}\r\n        {% if messages %}\r\n            {% for category, message in messages %}\r\n                <div class=\"message {{ category }}\">{{ message }}</div>\r\n            {% endfor %}\r\n        {% endif %}\r\n    {% endwith %}\r\n\r\n    <form action=\"{{ url_for('search_books') }}\" method=\"GET\" class=\"search-form\">\r\n        <input type=\"text\" name=\"query\" placeholder=\"Search by title or author...\" value=\"{{ query or '' }}\">\r\n        <button type=\"submit\">Search</button>\r\n    </form>\r\n\r\n    <h2>{{ title_text }} ({{ books|length }} found):</h2> {# Dynamic title based on query #}\r\n    {% if books %}\r\n        <div class=\"book-grid\">\r\n            {% for book in books %}\r\n                <div class=\"book-card\">\r\n                    <div class=\"book-details\">\r\n                        {% if book.thumbnail %}\r\n                            <img src=\"{{ book.thumbnail }}\" alt=\"Book Cover\">\r\n                        {% else %}\r\n                            <img src=\"{{ url_for('static', filename='no_cover.png') }}\" alt=\"No Cover\">\r\n                        {% endif %}\r\n                        <h3>{{ book.title }}</h3>\r\n                        <p>Author: {{ book.author }}</p>\r\n                        {% if book.published_date %}<p>Published: {{ book.published_date }}</p>{% endif %}\r\n                        {% if book.page_count %}<p>Pages: {{ book.page_count }}</p>{% endif %}\r\n                    </div>\r\n                    <form action=\"{{ url_for('add_from_api') }}\" method=\"POST\">\r\n                        <input type=\"hidden\" name=\"title\" value=\"{{ book.title }}\">\r\n                        <input type=\"hidden\" name=\"author\" value=\"{{ book.author }}\">\r\n                        <input type=\"hidden\" name=\"isbn\" value=\"{{ book.isbn or '' }}\">\r\n                        <input type=\"hidden\" name=\"description\" value=\"{{ book.description or '' }}\">\r\n                        <input type=\"hidden\" name=\"published_date\" value=\"{{ book.published_date or '' }}\">\r\n                        <input type=\"hidden\" name=\"page_count\" value=\"{{ book.page_count or '' }}\">\r\n                        <input type=\"hidden\" name=\"cover_url\" value=\"{{ book.thumbnail or '' }}\">\r\n                        <button type=\"submit\" class=\"add-button\">Add to My Shelf</button>\r\n                    </form>\r\n                </div>\r\n            {% endfor %}\r\n        </div>\r\n    {% elif query %}\r\n        <p>No books found for your query \"{{ query }}\".</p>\r\n    {% else %}\r\n        <p>No popular books loaded. Try searching above!</p>\r\n    {% endif %}\r\n\r\n    <a href=\"{{ url_for('home') }}\" class=\"back-link\">Back to My Shelf</a>\r\n</body>\r\n</html>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/search_results.html b/templates/search_results.html
+--- a/templates/search_results.html	(revision 1d24802f5b725964f743ff14536c516aac44c233)
++++ b/templates/search_results.html	(date 1748871788832)
+@@ -25,6 +25,50 @@
+ 
+         .message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+ 
++        .popup-modal {
++            display: none;
++            position: fixed;
++            top: 0; left: 0; right: 0; bottom: 0;
++            background: rgba(0,0,0,0.5);
++            z-index: 9999;
++            justify-content: center;
++            align-items: center;
++        }
++        .popup-content {
++            background: white;
++            padding: 30px;
++            border-radius: 10px;
++            text-align: center;
++            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
++            max-width: 400px;
++        }
++        .popup-button {
++            display: inline-block;
++            margin-top: 15px;
++            padding: 10px 20px;
++            background: #007bff;
++            color: white;
++            text-decoration: none;
++            border-radius: 5px;
++        }
++        .popup-button:hover {
++            background: #0056b3;
++        }
++
++
++        .close-button {
++            position: absolute;
++            top: 10px;
++            right: 15px;
++            font-size: 24px;
++            font-weight: bold;
++            color: #aaa;
++            cursor: pointer;
++        }
++        .close-button:hover {
++            color: #000;
++        }
++
+     </style>
+ </head>
+ <body>
+@@ -59,16 +103,17 @@
+                         {% if book.published_date %}<p>Published: {{ book.published_date }}</p>{% endif %}
+                         {% if book.page_count %}<p>Pages: {{ book.page_count }}</p>{% endif %}
+                     </div>
+-                    <form action="{{ url_for('add_from_api') }}" method="POST">
+-                        <input type="hidden" name="title" value="{{ book.title }}">
+-                        <input type="hidden" name="author" value="{{ book.author }}">
+-                        <input type="hidden" name="isbn" value="{{ book.isbn or '' }}">
+-                        <input type="hidden" name="description" value="{{ book.description or '' }}">
+-                        <input type="hidden" name="published_date" value="{{ book.published_date or '' }}">
+-                        <input type="hidden" name="page_count" value="{{ book.page_count or '' }}">
+-                        <input type="hidden" name="cover_url" value="{{ book.thumbnail or '' }}">
+-                        <button type="submit" class="add-button">Add to My Shelf</button>
+-                    </form>
++                        <form action="{{ url_for('add_from_api') }}" method="POST">
++                            <input type="hidden" name="title" value="{{ book.title }}">
++                            <input type="hidden" name="author" value="{{ book.author }}">
++                            <input type="hidden" name="isbn" value="{{ book.isbn or '' }}">
++                            <input type="hidden" name="description" value="{{ book.description or '' }}">
++                            <input type="hidden" name="published_date" value="{{ book.published_date or '' }}">
++                            <input type="hidden" name="page_count" value="{{ book.page_count or '' }}">
++                            <input type="hidden" name="cover_url" value="{{ book.thumbnail or '' }}">
++                            <input type="hidden" name="original_query" value="{{ query }}">
++                            <button type="submit" class="add-button">Add to My Shelf</button>
++                        </form>
+                 </div>
+             {% endfor %}
+         </div>
+@@ -77,7 +122,35 @@
+     {% else %}
+         <p>No popular books loaded. Try searching above!</p>
+     {% endif %}
++
++        <!-- MODAL: MUSISZ SIĘ ZALOGOWAĆ -->
++    <div id="loginRequiredModal" class="popup-modal">
++        <div class="popup-content" style="position: relative;">
++            <span class="close-button" onclick="document.getElementById('loginRequiredModal').style.display='none'">&times;</span>
++            <h2 style="color: #007bff;">Musisz się zalogować</h2>
++            <p>Aby dodać książkę, musisz być zalogowany.</p>
++            <div style="margin-top: 20px;">
++                <a href="{{ url_for('login') }}" class="popup-button">Zaloguj się</a>
++                <a href="{{ url_for('register') }}" class="popup-button" style="background: #17a2b8;">Zarejestruj się</a>
++            </div>
++        </div>
++    </div>
++
++    <script>
++    window.addEventListener('DOMContentLoaded', () => {
++        {% with messages = get_flashed_messages(with_categories=true) %}
++            {% for category, message in messages %}
++                {% if category == 'must_login_from_search' %}
++                    document.getElementById('loginRequiredModal').style.display = 'flex';
++                {% endif %}
++            {% endfor %}
++        {% endwith %}
++    });
++    </script>
++
++
+ 
+     <a href="{{ url_for('home') }}" class="back-link">Back to My Shelf</a>
++
+ </body>
+ </html>
+\ No newline at end of file
+Index: app.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># app.py\r\nimport os\r\nfrom flask import Flask, render_template, request, redirect, url_for, flash\r\nfrom dotenv import load_dotenv\r\nimport requests\r\nfrom models import db, Book, Category \r\nfrom flask_migrate import Migrate \r\n\r\nload_dotenv()\r\n\r\napp = Flask(__name__)\r\n\r\n# --- App Configuration and Database ---\r\napp.config['SECRET_KEY'] = os.getenv('SECRET_KEY')\r\napp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'\r\napp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False\r\n\r\ndb.init_app(app)\r\nmigrate = Migrate(app, db) \r\n\r\n# --- Application Views (Routes) ---\r\n@app.route('/')\r\ndef home():\r\n    status_filter = request.args.get('status_filter')\r\n    only_favorites = request.args.get('only_favorites') == '1'\r\n    sort_by = request.args.get('sort_by')\r\n\r\n    query = Book.query\r\n\r\n    if status_filter in ['0', '1', '2']:\r\n        query = query.filter_by(status=int(status_filter))\r\n\r\n    if only_favorites:\r\n        query = query.filter_by(is_favorite=True)\r\n\r\n    # Sortowanie\r\n    if sort_by == 'title_asc':\r\n        query = query.order_by(Book.title.asc())\r\n    elif sort_by == 'title_desc':\r\n        query = query.order_by(Book.title.desc())\r\n    elif sort_by == 'year_desc':\r\n        query = query.order_by(Book.year_published.desc().nullslast())\r\n    elif sort_by == 'year_asc':\r\n        query = query.order_by(Book.year_published.asc().nullslast())\r\n    elif sort_by == 'favorite':\r\n        query = query.order_by(Book.is_favorite.desc(), Book.title.asc())\r\n\r\n    books = query.all()\r\n\r\n    total_books = Book.query.count()\r\n    to_read_count = Book.query.filter_by(status=0).count()\r\n    reading_count = Book.query.filter_by(status=1).count()\r\n    read_count = Book.query.filter_by(status=2).count()\r\n\r\n    return render_template(\r\n        'home.html',\r\n        books=books,\r\n        status_filter=status_filter,\r\n        only_favorites=only_favorites,\r\n        total_books=total_books,\r\n        to_read_count=to_read_count,\r\n        reading_count=reading_count,\r\n        read_count=read_count,\r\n        sort_by = sort_by\r\n    )\r\n\r\n\r\n@app.route('/add_book', methods=['GET', 'POST'])\r\ndef add_book():\r\n    if request.method == 'POST':\r\n        title = request.form['title']\r\n        author = request.form['author']\r\n        category_id = request.form.get('category_id') # Can be None\r\n        \r\n        new_book = Book(title=title, author=author)\r\n        if category_id:\r\n            new_book.category_id = category_id\r\n        \r\n        db.session.add(new_book)\r\n        db.session.commit()\r\n        flash('Book added successfully!', 'success')\r\n        return redirect(url_for('home'))\r\n    \r\n    categories = Category.query.all()\r\n    return render_template('add_book.html', categories=categories)\r\n\r\n# --- Search Books with default popular results ---\r\n@app.route('/search', methods=['GET', 'POST'])\r\ndef search_books():\r\n    query = request.args.get('query', '').strip() # Get query, default to empty string, strip whitespace\r\n    books_from_api = []\r\n    \r\n    # Base URL for Google Books API\r\n    base_api_url = \"https://www.googleapis.com/books/v1/volumes?\"\r\n    \r\n    if query:\r\n        # If a query is provided, search specifically for it\r\n        api_url = f\"{base_api_url}q={query}&printType=books&maxResults=20\"\r\n        title_text = f\"Search results for '{query}'\"\r\n    else:\r\n        # If no query, show some popular/random books\r\n        # 'q=bestsellers' or 'q=fiction' are good general terms\r\n        # For a more \"random\" feel, you could use a few different default queries\r\n        api_url = f\"{base_api_url}q=bestsellers&printType=books&maxResults=20\" \r\n        title_text = \"Browse Popular Books\"\r\n    \r\n    try:\r\n        response = requests.get(api_url)\r\n        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx)\r\n        data = response.json()\r\n        \r\n        if 'items' in data:\r\n            for item in data['items']:\r\n                volume_info = item.get('volumeInfo', {})\r\n                \r\n                title = volume_info.get('title', 'No Title')\r\n                authors = volume_info.get('authors', ['No Author'])\r\n                author = ', '.join(authors)\r\n                \r\n                description = volume_info.get('description', 'No description available.')\r\n                published_date = volume_info.get('publishedDate', 'No Date')\r\n                page_count = volume_info.get('pageCount')\r\n                \r\n                image_links = volume_info.get('imageLinks', {})\r\n                thumbnail = image_links.get('thumbnail') or image_links.get('smallThumbnail')\r\n                \r\n                isbn_13 = None\r\n                industry_identifiers = volume_info.get('industryIdentifiers', [])\r\n                for identifier in industry_identifiers:\r\n                    if identifier.get('type') == 'ISBN_13':\r\n                        isbn_13 = identifier.get('identifier')\r\n                        break\r\n\r\n                books_from_api.append({\r\n                    'title': title,\r\n                    'author': author,\r\n                    'description': description,\r\n                    'published_date': published_date,\r\n                    'page_count': page_count,\r\n                    'thumbnail': thumbnail,\r\n                    'isbn': isbn_13,\r\n                    'google_books_id': item.get('id')\r\n                })\r\n        else:\r\n            if query: # Only flash if user actually searched and found nothing\r\n                flash(\"No books found for your query.\", 'info')\r\n            else: # For default browse, just display empty results\r\n                flash(\"Could not fetch popular books. Try searching!\", 'info')\r\n\r\n    except requests.exceptions.RequestException as e:\r\n        flash(f\"An error occurred while communicating with the API: {e}\", 'danger')\r\n    except ValueError: # JSON decoding error\r\n        flash(\"Error parsing data from API. Please try again.\", 'danger')\r\n    \r\n    return render_template('search_results.html', books=books_from_api, query=query, title_text=title_text)\r\n\r\n# --- Add Book from API to Collection ---\r\n@app.route('/add_from_api', methods=['POST'])\r\ndef add_from_api():\r\n    title = request.form['title']\r\n    author = request.form['author']\r\n    isbn = request.form.get('isbn')\r\n    description = request.form.get('description')\r\n    year_published_str = request.form.get('published_date')\r\n    page_count_str = request.form.get('page_count')\r\n    cover_url = request.form.get('cover_url')\r\n\r\n    year_published = None\r\n    if year_published_str:\r\n        try:\r\n            year_published = int(year_published_str[:4])\r\n        except (ValueError, TypeError):\r\n            pass\r\n    \r\n    page_count = None\r\n    if page_count_str:\r\n        try:\r\n            page_count = int(page_count_str)\r\n        except (ValueError, TypeError):\r\n            pass\r\n\r\n    try:\r\n        existing_book = None\r\n        if isbn:\r\n            existing_book = Book.query.filter_by(isbn=isbn).first()\r\n\r\n        if existing_book:\r\n            flash(f'Book \"{title}\" (ISBN: {isbn}) is already in your collection!', 'info')\r\n        else:\r\n            new_book = Book(\r\n                title=title,\r\n                author=author,\r\n                isbn=isbn,\r\n                description=description,\r\n                year_published=year_published,\r\n                page_count=page_count,\r\n                cover_url=cover_url,\r\n                is_favorite=False,\r\n                status=0, # Default to \"To Read\"\r\n                current_page=0\r\n            )\r\n            db.session.add(new_book)\r\n            db.session.commit()\r\n            flash(f'Book \"{title}\" has been added to your collection!', 'success')\r\n    except Exception as e:\r\n        flash(f\"An error occurred while adding the book: {e}\", 'danger')\r\n\r\n    return redirect(url_for('home'))\r\n\r\n# --- Delete Book Route ---\r\n@app.route('/remove_book/<int:book_id>', methods=['POST'])\r\ndef remove_book(book_id):\r\n    book_to_delete = Book.query.get_or_404(book_id)\r\n    try:\r\n        db.session.delete(book_to_delete)\r\n        db.session.commit()\r\n        flash(f'Book \"{book_to_delete.title}\" removed from your shelf.', 'success')\r\n    except Exception as e:\r\n        db.session.rollback() # Rollback in case of an error\r\n        flash(f\"Error removing book: {e}\", 'danger')\r\n    return redirect(url_for('home'))\r\n\r\n\r\n@app.route('/toggle_favorite/<int:book_id>', methods=['POST'])\r\ndef toggle_favorite(book_id):\r\n    book = Book.query.get_or_404(book_id)\r\n    book.is_favorite = not book.is_favorite\r\n    try:\r\n        db.session.commit()\r\n        status = \"added to\" if book.is_favorite else \"removed from\"\r\n        flash(f'Book \"{book.title}\" {status} favorites.', 'success')\r\n    except Exception as e:\r\n        db.session.rollback()\r\n        flash(f\"Error updating favorite status: {e}\", 'danger')\r\n    previous_url = request.referrer or url_for('home')\r\n    return redirect(previous_url)\r\n\r\n\r\n# --- Edit Book Route ---\r\n@app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])\r\ndef edit_book(book_id):\r\n    book = Book.query.get_or_404(book_id)\r\n    categories = Category.query.all()\r\n\r\n    if request.method == 'POST':\r\n        try:\r\n            # ONLY update category, status, and current_page\r\n\r\n            # Handle category\r\n            category_id = request.form.get('category_id')\r\n            book.category_id = int(category_id) if category_id else None\r\n\r\n            # Handle status\r\n            new_status = int(request.form.get('status'))\r\n            book.status = new_status\r\n\r\n            # Handle current_page based on new_status\r\n            if new_status == 1: # If status is \"Reading\"\r\n                current_page_str = request.form.get('current_page')\r\n                book.current_page = int(current_page_str) if current_page_str else 0\r\n            elif new_status == 2: # If status is not \"Reading\", reset current_page\r\n                book.current_page = book.page_count\r\n            else:\r\n                book.current_page = 0\r\n\r\n            db.session.commit()\r\n            flash(f'Book \"{book.title}\" updated successfully!', 'success')\r\n            return redirect(url_for('home'))\r\n        except ValueError:\r\n            db.session.rollback()\r\n            flash(\"Invalid input for current page. Please enter a valid number.\", 'danger')\r\n        except Exception as e:\r\n            db.session.rollback()\r\n            flash(f\"An error occurred while updating the book: {e}\", 'danger')\r\n    \r\n    # For GET request, render the form with existing book data\r\n    return render_template('edit_book.html', book=book, categories=categories)\r\n\r\n\r\n@app.route('/book/<int:book_id>')\r\ndef book_detail(book_id):\r\n    book = Book.query.get_or_404(book_id)\r\n    return render_template('book_detail.html', book=book)\r\n\r\n\r\n\r\nif __name__ == '__main__':\r\n    app.run(debug=True)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app.py b/app.py
+--- a/app.py	(revision 1d24802f5b725964f743ff14536c516aac44c233)
++++ b/app.py	(date 1748871922152)
+@@ -4,12 +4,21 @@
+ from dotenv import load_dotenv
+ import requests
+ from models import db, Book, Category 
+-from flask_migrate import Migrate 
++from flask_migrate import Migrate
++from flask_login import LoginManager, login_user, login_required, logout_user, current_user
++from werkzeug.security import generate_password_hash, check_password_hash
++from models import User
++
+ 
+ load_dotenv()
+ 
+ app = Flask(__name__)
+ 
++login_manager = LoginManager()
++login_manager.login_view = 'login'
++login_manager.init_app(app)
++
++
+ # --- App Configuration and Database ---
+ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+@@ -27,6 +36,11 @@
+ 
+     query = Book.query
+ 
++    if current_user.is_authenticated:
++        query = Book.query.filter_by(user_id=current_user.id)
++    else:
++        query = Book.query.filter_by(user_id=None)
++
+     if status_filter in ['0', '1', '2']:
+         query = query.filter_by(status=int(status_filter))
+ 
+@@ -47,10 +61,16 @@
+ 
+     books = query.all()
+ 
+-    total_books = Book.query.count()
+-    to_read_count = Book.query.filter_by(status=0).count()
+-    reading_count = Book.query.filter_by(status=1).count()
+-    read_count = Book.query.filter_by(status=2).count()
++    if current_user.is_authenticated:
++        total_books = Book.query.filter_by(user_id=current_user.id).count()
++        to_read_count = Book.query.filter_by(user_id=current_user.id, status=0).count()
++        reading_count = Book.query.filter_by(user_id=current_user.id, status=1).count()
++        read_count = Book.query.filter_by(user_id=current_user.id, status=2).count()
++    else:
++        total_books = None
++        to_read_count = None
++        reading_count = None
++        read_count = None
+ 
+     return render_template(
+         'home.html',
+@@ -61,18 +81,24 @@
+         to_read_count=to_read_count,
+         reading_count=reading_count,
+         read_count=read_count,
+-        sort_by = sort_by
++        sort_by=sort_by
+     )
+ 
+ 
++
+ @app.route('/add_book', methods=['GET', 'POST'])
+ def add_book():
++    if not current_user.is_authenticated:
++        flash('Musisz się zalogować', 'must_login')
++        return redirect(url_for('home'))
++
+     if request.method == 'POST':
+         title = request.form['title']
+         author = request.form['author']
+         category_id = request.form.get('category_id') # Can be None
+         
+         new_book = Book(title=title, author=author)
++        new_book.user_id = current_user.id
+         if category_id:
+             new_book.category_id = category_id
+         
+@@ -87,6 +113,9 @@
+ # --- Search Books with default popular results ---
+ @app.route('/search', methods=['GET', 'POST'])
+ def search_books():
++    if not current_user.is_authenticated:
++        flash('Aby dodać książkę musisz być zalogowany.', 'must_login')
++
+     query = request.args.get('query', '').strip() # Get query, default to empty string, strip whitespace
+     books_from_api = []
+     
+@@ -157,6 +186,10 @@
+ # --- Add Book from API to Collection ---
+ @app.route('/add_from_api', methods=['POST'])
+ def add_from_api():
++    if not current_user.is_authenticated:
++        flash('Musisz się zalogować', 'must_login_from_search')
++        return redirect(url_for('search_books', query=request.form.get('original_query', '')))
++
+     title = request.form['title']
+     author = request.form['author']
+     isbn = request.form.get('isbn')
+@@ -188,6 +221,7 @@
+             flash(f'Book "{title}" (ISBN: {isbn}) is already in your collection!', 'info')
+         else:
+             new_book = Book(
++
+                 title=title,
+                 author=author,
+                 isbn=isbn,
+@@ -197,7 +231,8 @@
+                 cover_url=cover_url,
+                 is_favorite=False,
+                 status=0, # Default to "To Read"
+-                current_page=0
++                current_page=0,
++                user_id=current_user.id,
+             )
+             db.session.add(new_book)
+             db.session.commit()
+@@ -282,6 +317,57 @@
+     book = Book.query.get_or_404(book_id)
+     return render_template('book_detail.html', book=book)
+ 
++@login_manager.user_loader
++def load_user(user_id):
++    return User.query.get(int(user_id))
++
++
++@app.route('/register', methods=['GET', 'POST'])
++def register():
++    if request.method == 'POST':
++        username = request.form['username']
++        password = request.form['password']
++
++        if User.query.filter_by(username=username).first():
++            flash("Taki użytkownik już istnieje!", "user_exists")
++            return redirect(url_for('register'))
++
++        hashed_password = generate_password_hash(password)
++        new_user = User(username=username, password=hashed_password)
++        db.session.add(new_user)
++        db.session.commit()
++        flash("Konto utworzone pomyślnie. Możesz się teraz zalogować.", 'success')
++        return redirect(url_for('login'))
++
++    return render_template('register.html')
++
++@app.route('/login', methods=['GET', 'POST'])
++def login():
++    if request.method == 'POST':
++        user = User.query.filter_by(username=request.form['username']).first()
++        if not user:
++            flash('Konto nie istnieje!', 'no_user')
++            return redirect(url_for('login'))
++        username = request.form['username']
++        password = request.form['password']
++
++        user = User.query.filter_by(username=username).first()
++        if user and check_password_hash(user.password, password):
++            login_user(user)
++            flash("Zalogowano pomyślnie!", 'success')
++            return redirect(url_for('home'))
++        else:
++            flash("Nieprawidłowa nazwa użytkownika lub hasło.", 'danger')
++            return redirect(url_for('login'))
++
++    return render_template('login.html')
++
++@app.route('/logout')
++@login_required
++def logout():
++    logout_user()
++    flash("Wylogowano.", 'info')
++    return redirect(url_for('home'))
+ 
+ 
+ if __name__ == '__main__':
+Index: migrations/versions/c599b409d6fd_initial_migration.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>\"\"\"initial migration\r\n\r\nRevision ID: c599b409d6fd\r\nRevises: \r\nCreate Date: 2025-05-31 19:56:38.940047\r\n\r\n\"\"\"\r\nfrom alembic import op\r\nimport sqlalchemy as sa\r\n\r\n\r\n# revision identifiers, used by Alembic.\r\nrevision = 'c599b409d6fd'\r\ndown_revision = None\r\nbranch_labels = None\r\ndepends_on = None\r\n\r\n\r\ndef upgrade():\r\n    # ### commands auto generated by Alembic - please adjust! ###\r\n    op.create_table('category',\r\n    sa.Column('id', sa.Integer(), nullable=False),\r\n    sa.Column('name', sa.String(length=100), nullable=False),\r\n    sa.PrimaryKeyConstraint('id'),\r\n    sa.UniqueConstraint('name')\r\n    )\r\n    op.create_table('book',\r\n    sa.Column('id', sa.Integer(), nullable=False),\r\n    sa.Column('title', sa.String(length=255), nullable=False),\r\n    sa.Column('author', sa.String(length=255), nullable=False),\r\n    sa.Column('isbn', sa.String(length=20), nullable=True),\r\n    sa.Column('year_published', sa.Integer(), nullable=True),\r\n    sa.Column('publisher', sa.String(length=255), nullable=True),\r\n    sa.Column('description', sa.Text(), nullable=True),\r\n    sa.Column('page_count', sa.Integer(), nullable=True),\r\n    sa.Column('cover_url', sa.String(length=500), nullable=True),\r\n    sa.Column('status', sa.Integer(), nullable=False),\r\n    sa.Column('current_page', sa.Integer(), nullable=True),\r\n    sa.Column('rating', sa.Integer(), nullable=True),\r\n    sa.Column('review', sa.Text(), nullable=True),\r\n    sa.Column('date_added', sa.DateTime(), nullable=False),\r\n    sa.Column('is_favorite', sa.Boolean(), nullable=True),\r\n    sa.Column('category_id', sa.Integer(), nullable=True),\r\n    sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),\r\n    sa.PrimaryKeyConstraint('id'),\r\n    sa.UniqueConstraint('isbn')\r\n    )\r\n    # ### end Alembic commands ###\r\n\r\n\r\ndef downgrade():\r\n    # ### commands auto generated by Alembic - please adjust! ###\r\n    op.drop_table('book')\r\n    op.drop_table('category')\r\n    # ### end Alembic commands ###\r\n
+===================================================================
+diff --git a/migrations/versions/c599b409d6fd_initial_migration.py b/migrations/versions/c599b409d6fd_initial_migration.py
+--- a/migrations/versions/c599b409d6fd_initial_migration.py	(revision 1d24802f5b725964f743ff14536c516aac44c233)
++++ b/migrations/versions/c599b409d6fd_initial_migration.py	(date 1748869253727)
+@@ -17,34 +17,48 @@
+ 
+ 
+ def upgrade():
+-    # ### commands auto generated by Alembic - please adjust! ###
++    # Tworzenie tabeli category
+     op.create_table('category',
+-    sa.Column('id', sa.Integer(), nullable=False),
+-    sa.Column('name', sa.String(length=100), nullable=False),
+-    sa.PrimaryKeyConstraint('id'),
+-    sa.UniqueConstraint('name')
++        sa.Column('id', sa.Integer(), nullable=False),
++        sa.Column('name', sa.String(length=100), nullable=False),
++        sa.PrimaryKeyConstraint('id'),
++        sa.UniqueConstraint('name')
+     )
++
++    # Tworzenie tabeli user
++    op.create_table('user',
++        sa.Column('id', sa.Integer(), nullable=False),
++        sa.Column('username', sa.String(length=150), nullable=False),
++        sa.Column('password', sa.String(length=200), nullable=False),
++        sa.PrimaryKeyConstraint('id'),
++        sa.UniqueConstraint('username')
++    )
++
++    # Tworzenie tabeli book (z kolumną user_id!)
+     op.create_table('book',
+-    sa.Column('id', sa.Integer(), nullable=False),
+-    sa.Column('title', sa.String(length=255), nullable=False),
+-    sa.Column('author', sa.String(length=255), nullable=False),
+-    sa.Column('isbn', sa.String(length=20), nullable=True),
+-    sa.Column('year_published', sa.Integer(), nullable=True),
+-    sa.Column('publisher', sa.String(length=255), nullable=True),
+-    sa.Column('description', sa.Text(), nullable=True),
+-    sa.Column('page_count', sa.Integer(), nullable=True),
+-    sa.Column('cover_url', sa.String(length=500), nullable=True),
+-    sa.Column('status', sa.Integer(), nullable=False),
+-    sa.Column('current_page', sa.Integer(), nullable=True),
+-    sa.Column('rating', sa.Integer(), nullable=True),
+-    sa.Column('review', sa.Text(), nullable=True),
+-    sa.Column('date_added', sa.DateTime(), nullable=False),
+-    sa.Column('is_favorite', sa.Boolean(), nullable=True),
+-    sa.Column('category_id', sa.Integer(), nullable=True),
+-    sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
+-    sa.PrimaryKeyConstraint('id'),
+-    sa.UniqueConstraint('isbn')
++        sa.Column('id', sa.Integer(), nullable=False),
++        sa.Column('title', sa.String(length=255), nullable=False),
++        sa.Column('author', sa.String(length=255), nullable=False),
++        sa.Column('isbn', sa.String(length=20), nullable=True),
++        sa.Column('year_published', sa.Integer(), nullable=True),
++        sa.Column('publisher', sa.String(length=255), nullable=True),
++        sa.Column('description', sa.Text(), nullable=True),
++        sa.Column('page_count', sa.Integer(), nullable=True),
++        sa.Column('cover_url', sa.String(length=500), nullable=True),
++        sa.Column('status', sa.Integer(), nullable=False),
++        sa.Column('current_page', sa.Integer(), nullable=True),
++        sa.Column('rating', sa.Integer(), nullable=True),
++        sa.Column('review', sa.Text(), nullable=True),
++        sa.Column('date_added', sa.DateTime(), nullable=False),
++        sa.Column('is_favorite', sa.Boolean(), nullable=True),
++        sa.Column('category_id', sa.Integer(), nullable=True),
++        sa.Column('user_id', sa.Integer(), nullable=True),
++        sa.ForeignKeyConstraint(['category_id'], ['category.id']),
++        sa.ForeignKeyConstraint(['user_id'], ['user.id']),
++        sa.PrimaryKeyConstraint('id'),
++        sa.UniqueConstraint('isbn')
+     )
++
+     # ### end Alembic commands ###
+ 
+ 

@@ -7,11 +7,11 @@
 </head>
 <body>
     <div class="container">
-        {% if book.cover_url %}
-            <div class="cover-container">
-                <img src="{{ book.cover_url }}" alt="Book Cover">
-            </div>
-        {% endif %}
+        <div class="cover-container">
+            <img src="{{ book.cover_url }}"
+                alt="Cover"
+                onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';" />
+        </div>
         <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 20px; right: 20px;">
             <button type="submit" style="background: none; border: none; font-size: 1.8em; cursor: pointer;">
                 {% if book.is_favorite %}

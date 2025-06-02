@@ -93,15 +93,12 @@
                     </div>
 
                     <div class="book-details">
-                        {% if book.cover_url %}
-                            <a href="{{ url_for('book_detail', book_id=book.id) }}">
-                                <img src="{{ book.cover_url }}" alt="Book Cover">
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('book_detail', book_id=book.id) }}">
-                                <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
-                            </a>
-                        {% endif %}
+                        
+                        <a href="{{ url_for('book_detail', book_id=book.id) }}">
+                           <img src="{{ book.cover_url }}"
+                            alt="Click for details"
+                            onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';" />
+                        </a>
 
                         <h3>{{ book.title }}</h3>
                         <p>Author: {{ book.author }}</p>

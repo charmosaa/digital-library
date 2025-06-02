@@ -40,11 +40,10 @@
             {% for book in books %}
                 <div class="book-card">
                     <div class="book-details">
-                        {% if book.cover_url %}
-                            <img src="{{ book.cover_url }}" alt="Book Cover">
-                        {% else %}
-                            <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover Available">
-                        {% endif %}
+                        <img src="{{ book.cover_url }}"
+                            alt="Cover"
+                            onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';" />
+
                         <h3>{{ book.title }}</h3>
                         <p>Author: {{ book.author }}</p>
                         {% if book.year %}<p>Year: {{ book.year }}</p>{% endif %}

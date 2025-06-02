@@ -72,7 +72,7 @@
     <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>
 
 
-<!-- Popup dla niezalogowanego użytkownika -->
+<!-- Popup for unlogged user -->
 <div id="loginPopup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:999;">
   <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:20px; border-radius:10px; text-align:center; box-shadow:0 0 10px rgba(0,0,0,0.3);">
     <p style="margin-bottom:20px;">Musisz się zalogować, aby dodać książkę!</p>
@@ -89,7 +89,7 @@
       event.preventDefault();
       document.getElementById("loginPopup").style.display = "block";
     }
-    // Jeśli zalogowany, formularz normalnie się wyśle.
+    // If logged in form will be uploaded
   }
 
   function closePopup() {

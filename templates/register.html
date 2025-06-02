@@ -78,15 +78,15 @@
     <a href="{{ url_for('home') }}">← Back to your Shelf</a>
 </div>
 
-<!-- MODAL: USERNAME JUŻ ISTNIEJE -->
+<!-- MODAL: USERNAME ALREADY EXISTS -->
 <div id="userExistsModal" class="popup-modal">
     <div class="popup-content">
         <span class="close-button" onclick="document.getElementById('userExistsModal').style.display='none'">&times;</span>
-        <h2>Nazwa użytkownika już istnieje!</h2>
-        <p>Wybierz inną nazwę użytkownika lub zaloguj się.</p>
+        <h2>Username already exists!</h2>
+        <p>Please choose a different username or log in.</p>
         <div style="margin-top: 20px;">
-            <a href="{{ url_for('login') }}" class="popup-button">Zaloguj się</a>
-            <a href="{{ url_for('register') }}" class="popup-button" style="background: #6c757d;">Spróbuj ponownie</a>
+            <a href="{{ url_for('login') }}" class="popup-button">Log in</a>
+            <a href="{{ url_for('register') }}" class="popup-button" style="background: #6c757d;">Try again</a>
         </div>
     </div>
 </div>

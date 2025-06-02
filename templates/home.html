@@ -30,10 +30,8 @@
 
     <form action="{{ url_for('search_books') }}" method="GET" class="search-form-home">
         <input type="text" name="query" placeholder="Search books via API..." >
-        <button type="submit">Search API</button>
+        <button type="submit" class="button">Search API</button>
     </form>
-
-    <button id="addBookBtn" class="add-button">Add Book Manually</button>
 
     <form method="GET" action="{{ url_for('home') }}" class="status-filter-form" id="filterForm" style="flex-direction: column; align-items: flex-start; gap: 10px;">
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -109,13 +107,13 @@
                         <p>Author: {{ book.author }}</p>
                         {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}
                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
-                        <p>Pages: {{ book.current_page }}{% if book.page_count %}/{{ book.page_count }}{% endif %}</p>
+                        <p>Pages in: {{ book.current_page }}{% if book.page_count %}/{{ book.page_count }}{% endif %}</p>
                     </div>
 
                     <div class="book-actions">
                         <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-button">Status</a>
                         {% if book.pdf_path %}
-                            <a href="{{ url_for('read_book', book_id=book.id) }}" class="button-link" style="background-color: #17a2b8;" target="_blank">Read Book</a>
+                            <a href="{{ url_for('read_book', book_id=book.id) }}" class="pdf-button">Read</a>
                         {% endif %}
                         <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" style="display:inline;">
                             <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book and its PDF?');">Remove</button>
@@ -134,12 +132,12 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>No books in your collection. Add the first one!</p>
+        <p>No books in this collection. Add the first one!</p>
     {% endif %}
 
     <div id="loginPopup" class="login-popup-overlay">
       <div class="login-popup-box">
-        <p style="margin-bottom:20px;">Musisz się zalogować, aby dodać książkę!</p>
+        <p style="margin-bottom:20px;">You have to log in to add books!</p>
         <a href="/login" class="login-popup-button">Log In</a>
         <button onclick="closePopup()" class="login-popup-close">Cancel</button>
       </div>

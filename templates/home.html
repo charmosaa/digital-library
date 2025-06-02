@@ -97,21 +97,21 @@
                     <div class="book-details">
                         {% if book.cover_url %}
                             <a href="{{ url_for('book_detail', book_id=book.id) }}">
-                            <img src="{{ book.cover_url or url_for('static', filename='no_cover.png') }}" alt="Book Cover">
-                        </a>
-                        <a href="{{ url_for('book_detail', book_id=book.id) }}">
-
-                        </a>
-
+                                <img src="{{ book.cover_url }}" alt="Book Cover">
+                            </a>
                         {% else %}
-                            <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
+                            <a href="{{ url_for('book_detail', book_id=book.id) }}">
+                                <img src="{{ url_for('static', filename='no_cover.png') }}" alt="No Cover">
+                            </a>
                         {% endif %}
+
                         <h3>{{ book.title }}</h3>
                         <p>Author: {{ book.author }}</p>
                         {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}
                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
-                        <p>Pages:  {{ book.current_page }}/{% if book.page_count %}{{ book.page_count }}{% endif %} </p>
+                        <p>Pages: {{ book.current_page }}{% if book.page_count %}/{{ book.page_count }}{% endif %}</p>
                     </div>
+
                     <div class="book-actions">
                         <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-button">Status</a>
                         {% if book.pdf_path %}

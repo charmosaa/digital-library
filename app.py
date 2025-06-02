@@ -1,6 +1,6 @@
 # app.py
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, send_file, jsonify
 from dotenv import load_dotenv
 import requests
 from models import db, Book, Category

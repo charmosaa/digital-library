@@ -602,14 +602,12 @@ def register():
         username = request.form['username']
         password = request.form['password']
         if User.query.filter_by(username=username).first():
-            flash("Nazwa użytkownika już istnieje!", 'user_exists')
             return redirect(url_for('register'))
 
         hashed_pw = generate_password_hash(password)
         new_user = User(username=username, password=hashed_pw)
         db.session.add(new_user)
         db.session.commit()
-        flash("Rejestracja zakończona sukcesem. Zaloguj się.", 'success')
         return redirect(url_for('login'))
 
     return render_template('register.html')
@@ -620,9 +618,7 @@ def login():
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
             login_user(user)
-            flash("Zalogowano pomyślnie!", 'success')
             return redirect(url_for('home'))
-        flash("Konto nie istnieje!", 'no_user')
         return redirect(url_for('login'))
     return render_template('login.html')
 
@@ -630,7 +626,6 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("Wylogowano.", 'info')
     return redirect(url_for('home'))
 
 

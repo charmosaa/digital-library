@@ -81,11 +81,11 @@
 <div id="noUserModal" class="popup-modal">
     <div class="popup-content">
         <span class="close-button" onclick="document.getElementById('noUserModal').style.display='none'">&times;</span>
-        <h2>Konto nie istnieje!</h2>
-        <p>Sprawdź dane logowania lub zarejestruj się.</p>
+        <h2>Account doesn't exist!</h2>
+        <p>Please check your login details or register.</p>
         <div style="margin-top: 20px;">
-            <a href="{{ url_for('register') }}" class="popup-button">Zarejestruj się</a>
-            <a href="{{ url_for('login') }}" class="popup-button" style="background: #6c757d;">Spróbuj ponownie</a>
+            <a href="{{ url_for('register') }}" class="popup-button">Register</a>
+            <a href="{{ url_for('login') }}" class="popup-button" style="background: #6c757d;">Try again</a>
         </div>
     </div>
 </div>

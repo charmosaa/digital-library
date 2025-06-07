@@ -19,7 +19,7 @@
     </style>
 </head>
 <body>
-    <h1>Search for Books on Anna's Archive (PDFs)</h1>
+    <h1>Search for Books on Anna's Archive</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -57,13 +57,13 @@
                         <input type="hidden" name="md5" value="{{ book.md5 }}">
                         <input type="hidden" name="file_format" value="{{ book.file_format or 'pdf' }}">
                          <input type="hidden" name="query" value="{{ query or '' }}"> <!-- Aby móc wrócić do wyszukiwania w razie błędu -->
-                        <button type="submit" class="add-button">Add PDF to My Shelf</button>
+                        <button type="submit" class="add-button">Add to My Shelf</button>
                     </form>
                 </div>
             {% endfor %}
         </div>
     {% elif query %}
-        <p>No PDF books found for your query "{{ query }}". Try a different search.</p>
+        <p>No books found for your query "{{ query }}". Try a different search.</p>
     {% else %}
         <!-- No need for this message if search requires query -->
     {% endif %}

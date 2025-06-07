@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading: {{ book.title }}</title>
+    <!-- Biblioteka Epub.js z CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: sans-serif;
+            background-color: #fff;
+        }
+        #viewer {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            color: black;
+        }
+
+
+        #hint {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 1000;
+            font-size: 14px;
+            pointer-events: none;
+
+
+            animation: fadeOutHint 5s forwards;
+        }
+
+        @keyframes fadeOutHint {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div id="viewer">Loading book...</div>
+
+    <div id="hint">Use ← and → arrow keys to turn pages</div>
+
+
+    <script>
+        const EPUB_URL = "{{ epub_url }}";
+        const viewer = document.getElementById("viewer");
+        const hint = document.getElementById("hint");
+
+        hint.style.display = 'none';
+
+        fetch(EPUB_URL)
+            .then(response => response.arrayBuffer())
+            .then(buffer => {
+                viewer.innerHTML = '';
+                var book = ePub(buffer);
+                var rendition = book.renderTo(viewer, {
+                    width: "100%",
+                    height: "100%",
+                    spread: "auto"
+                });
+
+                rendition.themes.register("light", { "body": { "background-color": "white", "color": "black" } });
+                rendition.themes.select("light");
+
+                rendition.display().then(() => {
+                    hint.style.display = 'block';
+                });
+
+                book.ready.then(() => {
+                    document.addEventListener('keydown', function(e){
+                        e.preventDefault();
+                        if (e.key === 'ArrowLeft') rendition.prev();
+                        if (e.key === 'ArrowRight') rendition.next();
+                    });
+                });
+            })
+            .catch(error => {
+                console.error("Error loading or rendering EPUB:", error);
+                viewer.innerText = `Error: Could not load the book. Check the console for details.`;
+                viewer.style.color = 'red';
+            });
+    </script>
+
+</body>
+</html>

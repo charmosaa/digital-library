@@ -10,6 +10,7 @@ import json
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask import abort
 
 
 load_dotenv()
@@ -139,12 +140,7 @@ def search_books():
 
     url = "https://annas-archive-api.p.rapidapi.com/search"
     querystring = {
-        "q": query,
-        "lang": "en",
-        "content": "book_any",
-        "ext": "pdf",
-        "sort": "most_relevant", # or "newest"
-        "limit": "10"
+        "q": query
     }
     headers = {
         "X-RapidAPI-Key": app.config['RAPIDAPI_KEY'],
@@ -152,7 +148,7 @@ def search_books():
     }
 
     try:
-        response = requests.get(url, headers=headers, params=querystring, timeout=20)
+        response = requests.get(url, headers=headers, params=querystring, timeout=30)
         print(f"Search API response status: {response.status_code}") # log status
         response.raise_for_status()
         data = response.json()
@@ -169,27 +165,20 @@ def search_books():
                 f"API response structure not recognized (expected dict with 'books' list) or 'books' list is empty. Data: {data}")
             # Flash message is already below if api_response_items remains empty
 
-        if api_response_items:
-            found_pdf_books = False  # Flag to check whether any PDFs were found
-            for item in api_response_items:
-                # Use field names from the JSON response
-                if item.get('format', '').lower() == 'pdf':  # Field is named 'format'
-                    books_from_api.append({
-                        'title': item.get('title', 'No Title'),
-                        'author': item.get('author', 'No Author'),
-                        'year': item.get('year'),
-                        'cover_url': item.get('imgUrl'),
-                        'md5': item.get('md5'),
-                        'file_format': item.get('format', 'pdf')
-                    })
-                    found_pdf_books = True
+        for item in api_response_items:
+            # Zmień warunek na sprawdzanie zarówno PDF jak i EPUB
+            if item.get('format', '').lower() in ['pdf', 'epub']:
+                books_from_api.append({
+                    'title': item.get('title', 'No Title'),
+                    'author': item.get('author', 'No Author'),
+                    'year': item.get('year'),
+                    'cover_url': item.get('imgUrl'),
+                    'md5': item.get('md5'),
+                    'file_format': item.get('format', '').lower()  # Zapisz format
+                })
 
-            title_text = f"Search results for '{query}' (PDFs only)"
-            if not found_pdf_books:  # If loop ran but didn't add any books (none were PDFs)
-                flash(f"No PDF books found for your query '{query}'. API returned results, but none were PDFs.", 'info')
-        else:  # If api_response_items is empty after structure check or 'books' key doesn't exist/is empty
-            flash(f"No books found in the API response for your query '{query}'.", 'info')
-            title_text = f"Search results for '{query}'"
+
+            title_text = f"Search results for '{query}' "
 
     except requests.exceptions.Timeout:
         flash("The request to Anna's Archive timed out. Please try again later.", 'danger')
@@ -245,7 +234,6 @@ def add_from_annas_archive():
 
     pdf_full_path_final = ""  # Path to the final downloaded file
 
-    # --- HELPER FUNCTION ---
     def attempt_download_and_add(book_md5, book_title, book_author, book_year_str, book_cover_url, book_file_format,
                                  is_alternative=False):
         nonlocal pdf_full_path_final
@@ -257,7 +245,8 @@ def add_from_annas_archive():
                 return False, "Alternative version already in collection."
 
         year_p = None
-        if book_year_str and str(book_year_str).isdigit(): year_p = int(book_year_str)
+        if book_year_str and str(book_year_str).isdigit():
+            year_p = int(book_year_str)
 
         get_links_url = "https://annas-archive-api.p.rapidapi.com/download"
         get_links_params = {"md5": book_md5}
@@ -266,8 +255,11 @@ def add_from_annas_archive():
             "X-RapidAPI-Host": "annas-archive-api.p.rapidapi.com"
         }
 
-        current_pdf_fname = f"{sanitize_filename(book_title)}_{book_md5}.{book_file_format}"
-        current_pdf_full_path = os.path.join(PDF_FOLDER, current_pdf_fname)
+        # Sanitize filename and use correct extension
+        sanitized_title = sanitize_filename(book_title)
+        file_extension = book_file_format.lower()
+        current_fname = f"{sanitized_title}_{book_md5}.{file_extension}"
+        current_full_path = os.path.join(PDF_FOLDER, current_fname)
 
         try:
             print(f"Attempting to get links for MD5: {book_md5} ('{book_title}')")
@@ -293,91 +285,112 @@ def add_from_annas_archive():
             downloaded_successfully = False
             last_err_msg_dl = "All download links failed."
             for i, actual_link in enumerate(dl_links):
-                print(f"Attempting PDF from link {i + 1}/{len(dl_links)}: {actual_link} for '{book_title}'")
+                print(
+                    f"Attempting {file_extension.upper()} from link {i + 1}/{len(dl_links)}: {actual_link} for '{book_title}'")
                 try:
-                    pdf_dl_h = {'User-Agent': 'Mozilla/5.0...'}
-                    pdf_r = requests.get(actual_link, stream=True, timeout=180, headers=pdf_dl_h, allow_redirects=True)
-                    print(f"PDF download status from {actual_link}: {pdf_r.status_code}")
-                    pdf_r.raise_for_status()
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+                    with requests.get(actual_link, stream=True, timeout=180, headers=headers,
+                                      allow_redirects=True) as r:
+                        r.raise_for_status()
 
-                    pdf_type = pdf_r.headers.get('Content-Type', '').lower()
-                    pdf_disp = pdf_r.headers.get('Content-Disposition', '')
-                    is_p = False
-                    if 'application/pdf' in pdf_type:
-                        is_p = True
-                    elif 'application/octet-stream' in pdf_type:
-                        if '.pdf' in pdf_disp.lower():
-                            is_p = True
+                        # Check file type based on content
+                        content_type = r.headers.get('Content-Type', '').lower()
+                        content_disposition = r.headers.get('Content-Disposition', '').lower()
+
+                        # Read first 4 bytes to check magic number
+                        first_bytes = next(r.iter_content(4), b'')
+                        is_valid_file = False
+
+                        if book_file_format == 'pdf':
+                            # PDF magic number: '%PDF'
+                            if first_bytes == b'%PDF':
+                                is_valid_file = True
+                            # Check content type
+                            elif 'application/pdf' in content_type:
+                                is_valid_file = True
+                            # Check content disposition
+                            elif 'application/octet-stream' in content_type and '.pdf' in content_disposition:
+                                is_valid_file = True
+
+                        elif book_file_format == 'epub':
+                            # EPUB magic number (ZIP format): 'PK\x03\x04'
+                            if first_bytes == b'PK\x03\x04':
+                                is_valid_file = True
+                            # Check content type
+                            elif 'application/epub+zip' in content_type:
+                                is_valid_file = True
+                            # Check content disposition
+                            elif 'application/octet-stream' in content_type and (
+                                    '.epub' in content_disposition or 'epub' in content_disposition):
+                                is_valid_file = True
+
+                        if not is_valid_file:
+                            last_err_msg_dl = f"Link {i + 1}: Downloaded file does not appear to be a valid {book_file_format.upper()}"
+                            continue
+
+                        # Save the file
+                        with open(current_full_path, 'wb') as f:
+                            f.write(first_bytes)  # write the first bytes we read
+                            for chunk in r.iter_content(chunk_size=8192):
+                                f.write(chunk)
+
+                        # Verify file was saved
+                        if os.path.getsize(current_full_path) > 0:
+                            downloaded_successfully = True
+                            break
                         else:
-                            first_b = next(pdf_r.iter_content(4, decode_unicode=False), b'')
-                            if first_b == b'%PDF':
-                                is_p = True
-                                with open(current_pdf_full_path, 'wb') as f:
-                                    f.write(first_b); [f.write(c) for c in pdf_r.iter_content(8192)]
-                                downloaded_successfully = True;
-                                break
-                            else:
-                                print(f"Octet-stream not PDF: {first_b}")
-
-                    if is_p and not downloaded_successfully:
-                        with open(current_pdf_full_path, 'wb') as f:
-                            [f.write(c) for c in pdf_r.iter_content(8192)]
-                        downloaded_successfully = True;
-                        break
-                    elif not is_p:
-                        last_err_msg_dl = f"Link {i + 1} not PDF (type: {pdf_type})."
-
+                            last_err_msg_dl = f"Link {i + 1}: Downloaded file is empty"
+                            os.remove(current_full_path)  # remove empty file
                 except requests.exceptions.RequestException as e_d:
-                    print(f"Error with link {i + 1} for '{book_title}': {e_d}")
-                    last_err_msg_dl = f"Error with link {i + 1}: {e_d}"
-                if downloaded_successfully: break
+                    last_err_msg_dl = f"Link {i + 1}: {str(e_d)}"
+                    print(f"Error with link {i + 1}: {e_d}")
 
-            if not downloaded_successfully: return False, last_err_msg_dl
+            if not downloaded_successfully:
+                return False, last_err_msg_dl
 
-            pdf_full_path_final = current_pdf_full_path
+            pdf_full_path_final = current_full_path
             print(f"File for '{book_title}' saved: {pdf_full_path_final}, Size: {os.path.getsize(pdf_full_path_final)}")
-            new_book_obj = Book(title=book_title, author=book_author, year_published=year_p,
-                                cover_url=book_cover_url, md5=book_md5, pdf_path=pdf_full_path_final,
-                                file_format=book_file_format, status=0, user_id=current_user.id)
+            new_book_obj = Book(
+                title=book_title,
+                author=book_author,
+                year_published=year_p,
+                cover_url=book_cover_url,
+                md5=book_md5,
+                pdf_path=pdf_full_path_final,
+                file_format=book_file_format,
+                status=0,
+                user_id=current_user.id
+            )
             db.session.add(new_book_obj)
             db.session.commit()
             return True, book_title
 
-
         except requests.exceptions.HTTPError as e_http:
-
             err_msg = f"HTTP error for '{book_title}' (MD5: {book_md5}): {e_http.response.status_code}."
-
-            raw_error_text = e_http.response.text  # Save the raw error text
-
+            raw_error_text = e_http.response.text
             print(f"RAW HTTPError response text for {book_md5}: {raw_error_text}")
-
-            api_err_msg_to_check = raw_error_text  # Default to raw text
+            api_err_msg_to_check = raw_error_text
 
             try:
-                # Try to parse as JSON if possible to get a more structured message
                 err_detail = e_http.response.json()
-                api_err_msg_to_check = err_detail.get("message", raw_error_text)  # Use 'message' if available
+                api_err_msg_to_check = err_detail.get("message", raw_error_text)
             except (json.JSONDecodeError, ValueError):
-                pass  # Parsing failed; keep using raw_error_text
+                pass
 
-            # Check if the "member_download endpoint" is mentioned in the API error
-            # Only do this for the original MD5 if we want the fallback just for that
-            if book_md5 == original_md5:  # Make sure original_md5 is in outer scope
-
-                print(
-                    f"Checking for 'member_download endpoint' in API error: '{api_err_msg_to_check}' for original MD5 {original_md5}")
-
+            if book_md5 == original_md5:
                 if "member_download endpoint" in api_err_msg_to_check.lower():
                     print(f"Detected 'member_download endpoint' requirement for original MD5 {book_md5}")
                     return "member_required", "Original book requires membership."
 
-            # If not "member_required" or not the original book, build a general error message
-            err_msg += f" Response: {api_err_msg_to_check[:100]}"  # Add a snippet of the error message
+            err_msg += f" Response: {api_err_msg_to_check[:100]}"
             print(err_msg)
             return False, err_msg
-
+        except Exception as e:
+            print(f"Unexpected error in download attempt for '{book_title}': {e}")
+            return False, f"Unexpected error: {str(e)}"
     # Main logic
+
     success_status, result_message = attempt_download_and_add(
         original_md5, original_title, original_author, original_year_str, original_cover_url, original_file_format
     )
@@ -467,21 +480,48 @@ def add_from_annas_archive():
     return redirect(url_for('home'))
 
 
-# --- Route to serve/read PDF files ---
 @app.route('/read_book/<int:book_id>')
+@login_required # Dobre jest zabezpieczenie tego widoku
 def read_book(book_id):
     book = Book.query.get_or_404(book_id)
-    if book.pdf_path and os.path.exists(book.pdf_path):
+    if book.file_format == 'pdf':
         try:
+            # Dla PDF, wysyłamy plik bezpośrednio do wbudowanej przeglądarki
             return send_file(book.pdf_path, as_attachment=False)
         except Exception as e:
-            app.logger.error(f"Error sending file {book.pdf_path}: {e}")
-            flash("Could not open the book file.", "danger")
+            app.logger.error(f"Error sending PDF file {book.pdf_path}: {e}")
+            flash("Could not open the PDF file.", "danger")
             return redirect(url_for('book_detail', book_id=book_id))
+
+    elif book.file_format == 'epub':
+        # Dla EPUB, renderujemy specjalny szablon z czytnikiem JS
+        # Przekazujemy do szablonu URL, pod którym czytnik JS będzie mógł pobrać plik
+        file_url = url_for('get_book_file', book_id=book.id)
+        return render_template('epub_reader.html', book=book, epub_url=file_url)
+
     else:
-        flash("PDF file not found for this book.", "danger")
+        # Fallback na wypadek nieznanego formatu
+        flash(f"Unsupported file format: '{book.file_format}'. Cannot open.", "warning")
         return redirect(url_for('book_detail', book_id=book_id))
 
+
+@app.route('/get_book_file/<int:book_id>')
+def get_book_file(book_id):
+    """
+    Ta trasa jest wywoływana przez JavaScript (czytnik Epub.js),
+    aby pobrać surowy plik książki.
+    """
+    book = Book.query.get_or_404(book_id)
+
+    # Dodatkowe zabezpieczenie: upewnij się, że użytkownik jest właścicielem
+    if book.user_id != current_user.id:
+        os.abort(403)
+
+    if book.pdf_path and os.path.exists(book.pdf_path):
+        # Tutaj po prostu wysyłamy plik, przeglądarka go nie otworzy, ale JS go pobierze
+        return send_file(book.pdf_path)
+    else:
+        os.abort(404) # File not found
 
 # --- Delete Book Route (also delete PDF) ---
 @app.route('/remove_book/<int:book_id>', methods=['POST'])

@@ -4,7 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d0dece5-fbd9-4908-acf5-35e89bbed890" name="Changes" comment="Poprawienie wyświetlonych tekstów po PL na ENG" />
+    <list default="true" id="0d0dece5-fbd9-4908-acf5-35e89bbed890" name="Changes" comment="Poprawienie wyświetlonych tekstów po PL na ENG">
+      <change afterPath="$PROJECT_DIR$/templates/epub_reader.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/search_results.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/search_results.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -43,6 +49,9 @@
     &quot;accountId&quot;: &quot;6df429e4-521a-4ee1-8b0f-85993407bd86&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -126,7 +135,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -161,6 +170,8 @@
       <workItem from="1748716740150" duration="4874000" />
       <workItem from="1748867720976" duration="9378000" />
       <workItem from="1748892772693" duration="1137000" />
+      <workItem from="1749223351496" duration="5744000" />
+      <workItem from="1749294647830" duration="1829000" />
     </task>
     <task id="LOCAL-00001" summary="Tabela ENUM z statusami czytania oraz wybór statusu w home.html">
       <option name="closed" value="true" />

@@ -4,8 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0d0dece5-fbd9-4908-acf5-35e89bbed890" name="Changes" comment="PL to ENG communication on page">
+    <list default="true" id="0d0dece5-fbd9-4908-acf5-35e89bbed890" name="Changes" comment="Poprawienie wyświetlonych tekstów po PL na ENG">
+      <change afterPath="$PROJECT_DIR$/templates/epub_reader.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/search_results.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/search_results.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +49,9 @@
     &quot;accountId&quot;: &quot;6df429e4-521a-4ee1-8b0f-85993407bd86&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -128,7 +135,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
@@ -162,9 +169,9 @@
       <workItem from="1748706330544" duration="3975000" />
       <workItem from="1748716740150" duration="4874000" />
       <workItem from="1748867720976" duration="9378000" />
-      <workItem from="1748892772693" duration="1244000" />
-      <workItem from="1748909549272" duration="248000" />
-      <workItem from="1749259134403" duration="42000" />
+      <workItem from="1748892772693" duration="1137000" />
+      <workItem from="1749223351496" duration="5744000" />
+      <workItem from="1749294647830" duration="1829000" />
     </task>
     <task id="LOCAL-00001" summary="Tabela ENUM z statusami czytania oraz wybór statusu w home.html">
       <option name="closed" value="true" />
@@ -238,15 +245,7 @@
       <option name="project" value="LOCAL" />
       <updated>1748893797248</updated>
     </task>
-    <task id="LOCAL-00010" summary="PL to ENG communication on page">
-      <option name="closed" value="true" />
-      <created>1748894014251</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1748894014251</updated>
-    </task>
-    <option name="localTasksCounter" value="11" />
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -262,11 +261,10 @@
     <MESSAGE value="Da sie przejść do szczegółów ksiazki dodanej manualnie (mały fix)" />
     <MESSAGE value="migrations" />
     <MESSAGE value="Poprawienie wyświetlonych tekstów po PL na ENG" />
-    <MESSAGE value="PL to ENG communication on page" />
-    <option name="LAST_COMMIT_MESSAGE" value="PL to ENG communication on page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Poprawienie wyświetlonych tekstów po PL na ENG" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/digital_library$python__m_venv_venv.coverage" NAME="python -m venv venv Coverage Results" MODIFIED="1748692402943" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/digital_library$digital_library.coverage" NAME="digital-library Coverage Results" MODIFIED="1749259139141" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/digital_library$digital_library.coverage" NAME="digital-library Coverage Results" MODIFIED="1748893913386" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

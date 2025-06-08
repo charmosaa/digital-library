@@ -7,7 +7,7 @@ from flask_login import UserMixin
 db = SQLAlchemy()
 
 
-# GŁÓWNA TABELA KSIĄŻEK (wspólna dla wszystkich)
+# BOOKS (MAIN)
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
@@ -29,7 +29,6 @@ class Book(db.Model):
     reviews = db.relationship('Review', backref='book', lazy=True, cascade='all, delete-orphan')
 
     def average_rating(self):
-        """Oblicz średnią ocenę z recenzji społeczności"""
         if not self.reviews:
             return None
         total = sum(review.rating for review in self.reviews if review.rating)
@@ -37,22 +36,19 @@ class Book(db.Model):
         return round(total / count, 1) if count > 0 else None
 
     def user_has_review(self, user_id):
-        """Sprawdź czy użytkownik już dodał recenzję"""
         return Review.query.filter_by(book_id=self.id, user_id=user_id).first() is not None
 
     def get_user_book(self, user_id):
-        """Zwraca UserBook dla konkretnego użytkownika"""
         return UserBook.query.filter_by(book_id=self.id, user_id=user_id).first()
 
     def is_in_user_collection(self, user_id):
-        """Sprawdź czy książka jest w kolekcji użytkownika"""
         return UserBook.query.filter_by(book_id=self.id, user_id=user_id).first() is not None
 
     def __repr__(self):
         return f"Book('{self.title}', '{self.author}')"
 
 
-# OSOBISTA KOLEKCJA UŻYTKOWNIKA (status czytania, etc.)
+# USER BOOKS
 class UserBook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
@@ -79,7 +75,7 @@ class UserBook(db.Model):
         return f"UserBook(User: {self.user_id}, Book: {self.book_id}, Status: {self.status})"
 
 
-# KATEGORIE
+# CATEGORY
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -88,7 +84,7 @@ class Category(db.Model):
         return f"Category('{self.name}')"
 
 
-# RECENZJE (wspólne dla wszystkich użytkowników tej książki)
+# REVEIW
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rating = db.Column(db.Integer, nullable=True)  # Community rating 1-5
@@ -118,7 +114,6 @@ class User(db.Model, UserMixin):
     reviews = db.relationship('Review', backref='author', lazy=True, cascade='all, delete-orphan')
 
     def get_books(self, status=None, favorite_only=False):
-        """Pobierz książki użytkownika z filtrami"""
         query = UserBook.query.filter_by(user_id=self.id)
 
         if status is not None:
@@ -130,11 +125,9 @@ class User(db.Model, UserMixin):
         return query.all()
 
     def has_book(self, book_id):
-        """Sprawdź czy użytkownik ma książkę w kolekcji"""
         return UserBook.query.filter_by(user_id=self.id, book_id=book_id).first() is not None
 
     def add_book_to_collection(self, book_id, status=0):
-        """Dodaj książkę do kolekcji użytkownika"""
         if not self.has_book(book_id):
             user_book = UserBook(user_id=self.id, book_id=book_id, status=status)
             db.session.add(user_book)
@@ -142,7 +135,6 @@ class User(db.Model, UserMixin):
         return None
 
     def get_collection_stats(self):
-        """Pobierz statystyki kolekcji użytkownika"""
         total = UserBook.query.filter_by(user_id=self.id).count()
         to_read = UserBook.query.filter_by(user_id=self.id, status=0).count()
         reading = UserBook.query.filter_by(user_id=self.id, status=1).count()

@@ -34,6 +34,7 @@
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             max-width: 400px;
+            position: relative;
         }
         .popup-button {
             display: inline-block;
@@ -84,8 +85,6 @@
         <h2>Account does not exist!</h2>
         <p>Please check your login details or register.</p>
         <div style="margin-top: 20px;">
-            <a href="{{ url_for('register') }}" class="popup-button">Register</a>
-            <a href="{{ url_for('login') }}" class="popup-button" style="background: #6c757d;">Try again</a>
             <a href="{{ url_for('register') }}" class="popup-button">Register</a>
             <a href="{{ url_for('login') }}" class="popup-button" style="background: #6c757d;">Try again</a>
         </div>

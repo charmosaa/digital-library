@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Books - Digital Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div style="position: absolute; top: 20px; right: 30px;">
+        {% if current_user.is_authenticated %}
+            <span style="margin-right: 15px;">Welcome, <strong>{{ current_user.username }}</strong></span>
+            <a href="{{ url_for('home') }}" style="text-decoration: none; background-color: #007bff; color: white; padding: 8px 12px; border-radius: 5px; margin-right: 8px;">My Collection</a>
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; background-color: #dc3545; color: white; padding: 8px 12px; border-radius: 5px;">Log out</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" style="text-decoration: none; background-color: #007bff; color: white; padding: 8px 12px; border-radius: 5px; margin-right: 8px;">Log in</a>
+            <a href="{{ url_for('register') }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 8px 12px; border-radius: 5px;">Register</a>
+        {% endif %}
+    </div>
+
+    <h1>Browse All Books</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="GET" action="{{ url_for('browse_books') }}" class="search-form">
+        <input type="text" name="query" placeholder="Search books by title or author..." value="{{ query or '' }}">
+        <button type="submit">Search</button>
+    </form>
+
+    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+        <a href="{{ url_for('search_books') }}" class="button" style="background-color: #28a745; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">Search New Books (API)</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('home') }}" class="button" style="background-color: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">My Collection</a>
+        {% endif %}
+    </div>
+
+    <h2>Available Books ({{ books|length }} found)</h2>
+
+    {% if books %}
+        <div class="book-grid">
+            {% for book in books %}
+                <div class="book-card">
+                    <div class="book-details">
+                        <a href="{{ url_for('book_detail', book_id=book.id) }}">
+                           <img src="{{ book.cover_url }}"
+                            alt="Click for details"
+                            onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';" />
+                        </a>
+
+                        <h3>{{ book.title }}</h3>
+                        <p>Author: {{ book.author }}</p>
+                        {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
+                        {% if book.page_count %}<p>Pages: {{ book.page_count }}</p>{% endif %}
+
+                        <!-- Pokaż średnią ocenę z recenzji -->
+                        {% set avg_rating = book.average_rating() %}
+                        {% if avg_rating %}
+                            <p style="color: #ffc107; font-weight: bold;">
+                                ⭐ {{ avg_rating }}/5 ({{ book.reviews|length }} review{{ 's' if book.reviews|length != 1 else '' }})
+                            </p>
+                        {% elif book.reviews %}
+                            <p style="color: #666;">{{ book.reviews|length }} review{{ 's' if book.reviews|length != 1 else '' }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="book-actions">
+                        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="edit-button">View Details</a>
+
+                        {% if current_user.is_authenticated %}
+                            {% if book.id in user_book_ids %}
+                                <span class="pdf-button" style="background-color: #6c757d; cursor: default;">In Collection ✓</span>
+                            {% else %}
+                                <form action="{{ url_for('add_book_to_collection', book_id=book.id) }}" method="POST" style="display:inline;">
+                                    <button type="submit" class="add-button">Add to Collection</button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ url_for('login') }}" class="add-button">Login to Add</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if query %}
+            <p>No books found for "{{ query }}". Try a different search term.</p>
+        {% else %}
+            <p>No books available yet. <a href="{{ url_for('search_books') }}">Search for books</a> to add them to the library!</p>
+        {% endif %}
+    {% endif %}
+
+    <a href="{{ url_for('home') if current_user.is_authenticated else url_for('login') }}" class="back-link">
+        ← Back to {{ 'My Collection' if current_user.is_authenticated else 'Login' }}
+    </a>
+
+</body>
+</html>

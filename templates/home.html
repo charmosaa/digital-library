@@ -18,7 +18,7 @@
         {% endif %}
     </div>
 
-    <h1>My Shelf</h1>
+    <h1>My Collection</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -28,11 +28,16 @@
         {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('search_books') }}" method="GET" class="search-form-home">
-        <input type="text" name="query" placeholder="Search books via API..." >
-        <button type="submit" class="button">Search API</button>
-    </form>
+    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+        <form action="{{ url_for('search_books') }}" method="GET" class="search-form-home">
+            <input type="text" name="query" placeholder="Search books via API..." >
+            <button type="submit" class="button">Search API</button>
+        </form>
 
+        <a href="{{ url_for('browse_books') }}" class="button" style="background-color: #28a745; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">Browse All Books</a>
+    </div>
+
+    {% if current_user.is_authenticated %}
     <form method="GET" action="{{ url_for('home') }}" class="status-filter-form" id="filterForm" style="flex-direction: column; align-items: flex-start; gap: 10px;">
         <div style="display: flex; gap: 10px; align-items: center;">
             <label for="status_filter">Filter by status:</label>
@@ -60,9 +65,7 @@
         </div>
     </form>
 
-
-
-    {% if books %}
+    {% if user_books %}
         <h2>Your Books:</h2>
         <div style="margin: 15px 0; font-weight: bold; font-size: 1em;">
             Total books: {{ total_books }} |
@@ -72,52 +75,51 @@
         </div>
 
         <div class="book-grid">
-            {% for book in books %}
+            {% for user_book in user_books %}
                 <div class="book-card">
                     <div class="book-badges-top">
                         <div class="book-category-badge">
-                            {% if book.category %}
-                                <span class="category-tag">{{ book.category.name }}</span>
+                            {% if user_book.category %}
+                                <span class="category-tag">{{ user_book.category.name }}</span>
                             {% else %}
                                 <span class="category-tag">Uncategorized</span>
                             {% endif %}
 
-                            {% if book.status|int == 0 %}
+                            {% if user_book.status == 0 %}
                                 <span class="status-to-read">To Read</span>
-                            {% elif book.status|int == 1 %}
+                            {% elif user_book.status == 1 %}
                                 <span class="status-reading">Reading</span>
-                            {% elif book.status|int == 2 %}
+                            {% elif user_book.status == 2 %}
                                 <span class="status-read">Read</span>
                             {% endif %}
                         </div>
                     </div>
 
                     <div class="book-details">
-                        
-                        <a href="{{ url_for('book_detail', book_id=book.id) }}">
-                           <img src="{{ book.cover_url }}"
+                        <a href="{{ url_for('book_detail', book_id=user_book.book.id) }}">
+                           <img src="{{ user_book.book.cover_url }}"
                             alt="Click for details"
                             onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';" />
                         </a>
 
-                        <h3>{{ book.title }}</h3>
-                        <p>Author: {{ book.author }}</p>
-                        {% if book.isbn %}<p>ISBN: {{ book.isbn }}</p>{% endif %}
-                        {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
-                        <p>Pages in: {{ book.current_page }}{% if book.page_count %}/{{ book.page_count }}{% endif %}</p>
+                        <h3>{{ user_book.book.title }}</h3>
+                        <p>Author: {{ user_book.book.author }}</p>
+                        {% if user_book.book.isbn %}<p>ISBN: {{ user_book.book.isbn }}</p>{% endif %}
+                        {% if user_book.book.year_published %}<p>Year: {{ user_book.book.year_published }}</p>{% endif %}
+                        <p>Pages: {{ user_book.current_page }}{% if user_book.book.page_count %}/{{ user_book.book.page_count }}{% endif %}</p>
                     </div>
 
                     <div class="book-actions">
-                        <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-button">Status</a>
-                        {% if book.pdf_path %}
-                            <a href="{{ url_for('read_book', book_id=book.id) }}" class="pdf-button">Read</a>
+                        <a href="{{ url_for('edit_book', book_id=user_book.book.id) }}" class="edit-button">Status</a>
+                        {% if user_book.book.pdf_path %}
+                            <a href="{{ url_for('read_book', book_id=user_book.book.id) }}" class="pdf-button">Read</a>
                         {% endif %}
-                        <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book and its PDF?');">Remove</button>
+                        <form action="{{ url_for('remove_book', book_id=user_book.book.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book from your collection?');">Remove</button>
                         </form>
-                        <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
+                        <form action="{{ url_for('toggle_favorite', book_id=user_book.book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
                             <button type="submit" style="background: none; border: none; font-size: 1.3em; cursor: pointer;">
-                                {% if book.is_favorite %}
+                                {% if user_book.is_favorite %}
                                     ⭐
                                 {% else %}
                                     ☆
@@ -129,36 +131,16 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>No books in this collection. Add the first one!</p>
+        <p>No books in your collection. <a href="{{ url_for('browse_books') }}">Browse available books</a> to add some!</p>
     {% endif %}
 
-    <div id="loginPopup" class="login-popup-overlay">
-      <div class="login-popup-box">
-        <p style="margin-bottom:20px;">You must be logged in to add a book!</p>
-        <a href="/login" class="login-popup-button">Log In</a>
-        <button onclick="closePopup()" class="login-popup-close">Cancel</button>
-      </div>
-    </div>
-
-    <script>
-      const userIsAuthenticated = {{ current_user.is_authenticated|tojson }};
-
-      document.getElementById("addBookBtn").addEventListener("click", function(event) {
-        event.preventDefault();
-        if (userIsAuthenticated) {
-          window.location.href = "{{ url_for('add_book') }}";
-        } else {
-          document.getElementById("loginPopup").style.display = "block";
-        }
-      });
-
-      function closePopup() {
-        document.getElementById("loginPopup").style.display = "none";
-      }
-    </script>
-
-
-
+    {% else %}
+        <div style="text-align: center; margin-top: 50px;">
+            <h2>Welcome to Digital Library!</h2>
+            <p>Please <a href="{{ url_for('login') }}">log in</a> to manage your personal book collection.</p>
+            <p>You can <a href="{{ url_for('browse_books') }}">browse available books</a> without logging in.</p>
+        </div>
+    {% endif %}
 
 </body>
 </html>

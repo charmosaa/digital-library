@@ -3,46 +3,83 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
-
 # placeholder, real object initialized in app.py
 db = SQLAlchemy()
 
 
-# BOOK model
+# GŁÓWNA TABELA KSIĄŻEK (wspólna dla wszystkich)
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     author = db.Column(db.String(255), nullable=False)
-    isbn = db.Column(db.String(20), unique=True, nullable=True) # should be unique
+    isbn = db.Column(db.String(20), unique=True, nullable=True)
     year_published = db.Column(db.Integer, nullable=True)
-    publisher = db.Column(db.String(255), nullable=True) # Możemy go usunąć, jeśli Anna's Archive go nie dostarcza
-    description = db.Column(db.Text, nullable=True) # Podobnie, jeśli nie jest łatwo dostępny
+    publisher = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
     page_count = db.Column(db.Integer, nullable=True)
-    cover_url = db.Column(db.String(500), nullable=True) # cover img link
-    # Read status: 0 - To do, 1 - During, 2 - Finished
-    status = db.Column(db.Integer, default=0, nullable=False)
-    current_page = db.Column(db.Integer, default=0, nullable=True)
-    rating = db.Column(db.Integer, nullable=True) # rating (from 1 - 5)
-    review = db.Column(db.Text, nullable=True)
-    date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    is_favorite = db.Column(db.Boolean, default=False)
+    cover_url = db.Column(db.String(500), nullable=True)
 
-    # realtion to User
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    # Anna's Archive fields
+    md5 = db.Column(db.String(32), unique=True, nullable=True)
+    pdf_path = db.Column(db.String(500), nullable=True)
+    file_format = db.Column(db.String(10), nullable=True)
 
-    # relation to Category
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
-    category = db.relationship('Category', backref='books')
+    # Relations
+    user_books = db.relationship('UserBook', backref='book', lazy=True, cascade='all, delete-orphan')
+    reviews = db.relationship('Review', backref='book', lazy=True, cascade='all, delete-orphan')
 
-    # Nowe pola dla Anna's Archive
-    md5 = db.Column(db.String(32), unique=True, nullable=True) # MD5 z Anna's Archive, do identyfikacji i pobierania
-    pdf_path = db.Column(db.String(500), nullable=True) # Ścieżka do zapisanego pliku PDF
-    file_format = db.Column(db.String(10), nullable=True) # np. 'pdf', 'epub'
+    def average_rating(self):
+        """Oblicz średnią ocenę z recenzji społeczności"""
+        if not self.reviews:
+            return None
+        total = sum(review.rating for review in self.reviews if review.rating)
+        count = len([review for review in self.reviews if review.rating])
+        return round(total / count, 1) if count > 0 else None
+
+    def user_has_review(self, user_id):
+        """Sprawdź czy użytkownik już dodał recenzję"""
+        return Review.query.filter_by(book_id=self.id, user_id=user_id).first() is not None
+
+    def get_user_book(self, user_id):
+        """Zwraca UserBook dla konkretnego użytkownika"""
+        return UserBook.query.filter_by(book_id=self.id, user_id=user_id).first()
+
+    def is_in_user_collection(self, user_id):
+        """Sprawdź czy książka jest w kolekcji użytkownika"""
+        return UserBook.query.filter_by(book_id=self.id, user_id=user_id).first() is not None
 
     def __repr__(self):
-        return f"Book('{self.title}', '{self.author}', '{self.status}')"
+        return f"Book('{self.title}', '{self.author}')"
 
-# CATEGORY model
+
+# OSOBISTA KOLEKCJA UŻYTKOWNIKA (status czytania, etc.)
+class UserBook(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    # Relations
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
+
+    # Personal reading data
+    status = db.Column(db.Integer, default=0, nullable=False)  # 0=To Read, 1=Reading, 2=Read
+    current_page = db.Column(db.Integer, default=0, nullable=True)
+    personal_rating = db.Column(db.Integer, nullable=True)  # Personal rating 1-10
+    personal_notes = db.Column(db.Text, nullable=True)  # Personal notes
+    is_favorite = db.Column(db.Boolean, default=False)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    # Constraint: jeden użytkownik może mieć książkę tylko raz w kolekcji
+    __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_user_book'),)
+
+    # Relations
+    category = db.relationship('Category', backref='user_books')
+
+    def __repr__(self):
+        return f"UserBook(User: {self.user_id}, Book: {self.book_id}, Status: {self.status})"
+
+
+# KATEGORIE
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -50,10 +87,75 @@ class Category(db.Model):
     def __repr__(self):
         return f"Category('{self.name}')"
 
-#USER model
+
+# RECENZJE (wspólne dla wszystkich użytkowników tej książki)
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Integer, nullable=True)  # Community rating 1-5
+    comment = db.Column(db.Text, nullable=True)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relations
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+
+    # Constraint: jeden użytkownik może dodać tylko jedną recenzję na książkę
+    __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_user_book_review'),)
+
+    def __repr__(self):
+        return f"Review('{self.rating}', User: {self.user_id}, Book: {self.book_id})"
+
+
+# UŻYTKOWNICY
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
-    books = db.relationship('Book', backref='owner', lazy=True)
+    # Relations
+    user_books = db.relationship('UserBook', backref='user', lazy=True, cascade='all, delete-orphan')
+    reviews = db.relationship('Review', backref='author', lazy=True, cascade='all, delete-orphan')
+
+    def get_books(self, status=None, favorite_only=False):
+        """Pobierz książki użytkownika z filtrami"""
+        query = UserBook.query.filter_by(user_id=self.id)
+
+        if status is not None:
+            query = query.filter_by(status=status)
+
+        if favorite_only:
+            query = query.filter_by(is_favorite=True)
+
+        return query.all()
+
+    def has_book(self, book_id):
+        """Sprawdź czy użytkownik ma książkę w kolekcji"""
+        return UserBook.query.filter_by(user_id=self.id, book_id=book_id).first() is not None
+
+    def add_book_to_collection(self, book_id, status=0):
+        """Dodaj książkę do kolekcji użytkownika"""
+        if not self.has_book(book_id):
+            user_book = UserBook(user_id=self.id, book_id=book_id, status=status)
+            db.session.add(user_book)
+            return user_book
+        return None
+
+    def get_collection_stats(self):
+        """Pobierz statystyki kolekcji użytkownika"""
+        total = UserBook.query.filter_by(user_id=self.id).count()
+        to_read = UserBook.query.filter_by(user_id=self.id, status=0).count()
+        reading = UserBook.query.filter_by(user_id=self.id, status=1).count()
+        read = UserBook.query.filter_by(user_id=self.id, status=2).count()
+        favorites = UserBook.query.filter_by(user_id=self.id, is_favorite=True).count()
+
+        return {
+            'total': total,
+            'to_read': to_read,
+            'reading': reading,
+            'read': read,
+            'favorites': favorites
+        }
+
+    def __repr__(self):
+        return f"User('{self.username}')"

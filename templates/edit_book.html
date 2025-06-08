@@ -28,32 +28,29 @@
     {% endwith %}
 
     <form method="POST">
-        {# Only Category, Status, and Current Page are editable here #}
-
         <label for="category_id">Category:</label>
         <select id="category_id" name="category_id">
             <option value="">Select a category (None)</option>
             {% for category in categories %}
-                <option value="{{ category.id }}" {% if book.category_id == category.id %}selected{% endif %}>
+                <option value="{{ category.id }}" {% if user_book.category_id == category.id %}selected{% endif %}>
                     {{ category.name }}
                 </option>
             {% endfor %}
         </select>
-        
+
         <label for="status">Status:</label>
         <select id="status" name="status" onchange="toggleCurrentPageField()">
-            <option value="0" {% if book.status == 0 %}selected{% endif %}>To Read</option>
-            <option value="1" {% if book.status == 1 %}selected{% endif %}>Reading</option>
-            <option value="2" {% if book.status == 2 %}selected{% endif %}>Read</option>
+            <option value="0" {% if user_book.status == 0 %}selected{% endif %}>To Read</option>
+            <option value="1" {% if user_book.status == 1 %}selected{% endif %}>Reading</option>
+            <option value="2" {% if user_book.status == 2 %}selected{% endif %}>Read</option>
         </select>
 
         <div id="current_page_field">
             <label for="current_page">Current Page:</label>
-        
             <input type="number"
                 id="current_page"
                 name="current_page"
-                value="{{ book.current_page or '' }}"
+                value="{{ user_book.current_page or '' }}"
                 min="1"
                 {% if book.page_count %}
                 max="{{ book.page_count - 1 }}"
@@ -62,7 +59,7 @@
 
         <input type="submit" value="Save Changes">
     </form>
-    <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>
+    <a href="{{ url_for('home') }}" class="back-link">← Back to collection</a>
 
     <script>
         function toggleCurrentPageField() {

@@ -3,14 +3,13 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, send_file, jsonify
 from dotenv import load_dotenv
 import requests
-from models import db, Book, Category
+from models import db, Book, Category, User, Review, UserBook
 from flask_migrate import Migrate
 import re
 import json
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime
 
 load_dotenv()
 
@@ -20,7 +19,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-
 # --- App Configuration and Database ---
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'  # database will be in instance/site.db
@@ -29,7 +27,7 @@ app.config['RAPIDAPI_KEY'] = os.getenv('RAPIDAPI_KEY')
 
 # for uploaded PDFs
 PDF_FOLDER = os.path.join(app.instance_path, 'pdfs')
-os.makedirs(PDF_FOLDER, exist_ok=True) 
+os.makedirs(PDF_FOLDER, exist_ok=True)
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -51,15 +49,17 @@ def home():
     sort_by = request.args.get('sort_by')
 
     if current_user.is_authenticated:
-        query = Book.query.filter_by(user_id=current_user.id)
+        # Pobierz UserBook dla zalogowanego użytkownika
+        query = UserBook.query.filter_by(user_id=current_user.id).join(Book)
     else:
-        query = Book.query.filter_by(user_id=None)  # just unlogged books
+        # Dla niezalogowanych - pokaż dostępne książki do dodania do kolekcji
+        return redirect(url_for('browse_books'))
 
     if status_filter in ['0', '1', '2']:
-        query = query.filter_by(status=int(status_filter))
+        query = query.filter(UserBook.status == int(status_filter))
 
     if only_favorites:
-        query = query.filter_by(is_favorite=True)
+        query = query.filter(UserBook.is_favorite == True)
 
     if sort_by == 'title_asc':
         query = query.order_by(Book.title.asc())
@@ -69,58 +69,85 @@ def home():
         query = query.order_by(Book.year_published.desc().nullslast())
     elif sort_by == 'year_asc':
         query = query.order_by(Book.year_published.asc().nullslast())
-    elif sort_by == 'favorite':
-        query = query.order_by(Book.is_favorite.desc(), Book.title.asc())
     else:
-        query = query.order_by(Book.date_added.desc())
+        query = query.order_by(UserBook.date_added.desc())
 
-    books = query.all()
+    user_books = query.all()
 
-    total_books = query.count()
-    to_read_count = query.filter_by(status=0).count()
-    reading_count = query.filter_by(status=1).count()
-    read_count = query.filter_by(status=2).count()
+    # Statystyki
+    stats = current_user.get_collection_stats()
 
     return render_template(
         'home.html',
-        books=books,
+        user_books=user_books,
         status_filter=status_filter,
         only_favorites=only_favorites,
-        total_books=total_books,
-        to_read_count=to_read_count,
-        reading_count=reading_count,
-        read_count=read_count,
+        total_books=stats['total'],
+        to_read_count=stats['to_read'],
+        reading_count=stats['reading'],
+        read_count=stats['read'],
         sort_by=sort_by
     )
 
 
+@app.route('/browse_books')
+def browse_books():
+    """Przeglądaj wszystkie dostępne książki w systemie"""
+    try:
+        query = request.args.get('query', '').strip()
 
-@app.route('/add_book', methods=['GET', 'POST'])
+        books_query = Book.query
+
+        if query:
+            books_query = books_query.filter(
+                Book.title.contains(query) | Book.author.contains(query)
+            )
+
+        books = books_query.order_by(Book.title).all()
+
+        # Dla zalogowanych użytkowników - sprawdź które książki już mają
+        user_book_ids = []
+        if current_user.is_authenticated:
+            user_book_ids = [ub.book_id for ub in UserBook.query.filter_by(user_id=current_user.id).all()]
+
+        return render_template('browse_books.html',
+                               books=books,
+                               user_book_ids=user_book_ids,
+                               query=query)
+
+    except Exception as e:
+        # Debug w przeglądarce
+        return f"Error in browse_books: {str(e)}<br>Type: {type(e).__name__}"
+
+@app.route('/add_book_to_collection/<int:book_id>', methods=['POST'])
 @login_required
-def add_book():
-    if not current_user.is_authenticated:
-        if request.method == 'POST':
-            return jsonify({'error': 'unauthenticated'}), 401
-        else:
-            return render_template('add_book.html', show_login_popup=True)
+def add_book_to_collection(book_id):
+    """Dodaj istniejącą książkę do kolekcji użytkownika"""
+    book = Book.query.get_or_404(book_id)
 
+    # Sprawdź czy użytkownik już ma tę książkę
+    existing = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    if existing:
+        flash(f"You already have '{book.title}' in your collection!", 'info')
+        return redirect(url_for('book_detail', book_id=book_id))
 
-    if request.method == 'POST':
-        title = request.form['title']
-        author = request.form['author']
-        category_id = request.form.get('category_id')  # Can be None
+    # Dodaj książkę do kolekcji
+    user_book = UserBook(
+        user_id=current_user.id,
+        book_id=book_id,
+        status=0,  # Do przeczytania
+        is_favorite=False
+    )
 
-        new_book = Book(title=title, author=author, user_id=current_user.id)
-        if category_id:
-            new_book.category_id = int(category_id) if category_id else None  # has to be int
-
-        db.session.add(new_book)
+    try:
+        db.session.add(user_book)
         db.session.commit()
-        flash('Book added successfully!', 'success')
-        return redirect(url_for('home'))
+        flash(f"'{book.title}' added to your collection!", 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error adding book to collection: {e}", 'danger')
 
-    categories = Category.query.all()
-    return render_template('add_book.html', categories=categories)
+    return redirect(url_for('book_detail', book_id=book_id))
 
 
 @app.route('/search', methods=['GET'])
@@ -143,7 +170,7 @@ def search_books():
         "lang": "en",
         "content": "book_any",
         "ext": "pdf",
-        "sort": "most_relevant", # or "newest"
+        "sort": "most_relevant",
         "limit": "10"
     }
     headers = {
@@ -153,27 +180,20 @@ def search_books():
 
     try:
         response = requests.get(url, headers=headers, params=querystring, timeout=20)
-        print(f"Search API response status: {response.status_code}") # log status
+        print(f"Search API response status: {response.status_code}")
         response.raise_for_status()
         data = response.json()
-        #print(f"Search API response data: {json.dumps(data, indent=2)}") # whole JSON (for debug)
 
-        # Check if the response is a dictionary and contains the 'books' key,
-        # and whether the value under this key is a list.
         if isinstance(data, dict) and 'books' in data and isinstance(data['books'], list):
             print("API response is a dict with a 'books' list.")
-            api_response_items = data['books']  # Assign the book list
+            api_response_items = data['books']
         else:
-            # This condition is now more precise for this API
-            print(
-                f"API response structure not recognized (expected dict with 'books' list) or 'books' list is empty. Data: {data}")
-            # Flash message is already below if api_response_items remains empty
+            print(f"API response structure not recognized. Data: {data}")
 
         if api_response_items:
-            found_pdf_books = False  # Flag to check whether any PDFs were found
+            found_pdf_books = False
             for item in api_response_items:
-                # Use field names from the JSON response
-                if item.get('format', '').lower() == 'pdf':  # Field is named 'format'
+                if item.get('format', '').lower() == 'pdf':
                     books_from_api.append({
                         'title': item.get('title', 'No Title'),
                         'author': item.get('author', 'No Author'),
@@ -185,9 +205,9 @@ def search_books():
                     found_pdf_books = True
 
             title_text = f"Search results for '{query}' (PDFs only)"
-            if not found_pdf_books:  # If loop ran but didn't add any books (none were PDFs)
+            if not found_pdf_books:
                 flash(f"No PDF books found for your query '{query}'. API returned results, but none were PDFs.", 'info')
-        else:  # If api_response_items is empty after structure check or 'books' key doesn't exist/is empty
+        else:
             flash(f"No books found in the API response for your query '{query}'.", 'info')
             title_text = f"Search results for '{query}'"
 
@@ -196,19 +216,20 @@ def search_books():
     except requests.exceptions.HTTPError as e:
         flash_message = f"Error from Anna's Archive API: {e.response.status_code}."
         try:
-            error_detail = e.response.json()  # Try to read JSON from error
+            error_detail = e.response.json()
             flash_message += f" Message: {error_detail.get('message', e.response.text)}"
-        except ValueError:  # If error response is not JSON
+        except ValueError:
             flash_message += f" Response: {e.response.text[:200]}"
         print(f"HTTPError in search_books: {flash_message}")
         flash(flash_message, 'danger')
     except requests.exceptions.RequestException as e:
         print(f"RequestException in search_books: {e}")
         flash(f"An error occurred while communicating with Anna's Archive: {e}", 'danger')
-    except json.JSONDecodeError as e:  # Changed from ValueError to be more specific
-        print(f"JSONDecodeError in search_books: {e}. Response text: {response.text[:500] if 'response' in locals() else 'N/A'}")
+    except json.JSONDecodeError as e:
+        print(
+            f"JSONDecodeError in search_books: {e}. Response text: {response.text[:500] if 'response' in locals() else 'N/A'}")
         flash("Error parsing data from Anna's Archive API. Please try again.", 'danger')
-    except Exception as e:  # Generic fallback
+    except Exception as e:
         print(f"Unexpected error in search_books: {e}")
         flash(f"An unexpected error occurred during search: {e}", 'danger')
 
@@ -231,33 +252,44 @@ def add_from_annas_archive():
     original_cover_url = request.form.get('cover_url')
     original_md5 = request.form.get('md5')
     original_file_format = request.form.get('file_format', 'pdf')
-    original_search_query = request.form.get('original_search_query', original_title)
+    original_search_query = request.form.get('query', original_title)
 
     if not original_md5:
         flash("MD5 hash is missing.", "danger")
         return redirect(request.referrer or url_for('search_books'))
 
-    # Check if a book with this MD5 already exists
-    existing_book_original_md5 = Book.query.filter_by(md5=original_md5).first()
-    if existing_book_original_md5:
-        flash(f'The book "{original_title}" (this specific version) is already in your shelf!', 'info')
+    # Sprawdź czy książka już istnieje w głównej tabeli Book
+    existing_book = Book.query.filter_by(md5=original_md5).first()
+    if existing_book:
+        # Książka istnieje, sprawdź czy użytkownik ją ma w kolekcji
+        user_has_book = UserBook.query.filter_by(user_id=current_user.id, book_id=existing_book.id).first()
+        if user_has_book:
+            flash(f'You already have "{original_title}" in your collection!', 'info')
+        else:
+            # Dodaj do kolekcji użytkownika
+            user_book = UserBook(user_id=current_user.id, book_id=existing_book.id, status=0)
+            db.session.add(user_book)
+            db.session.commit()
+            flash(f'"{original_title}" added to your collection!', 'success')
         return redirect(url_for('home'))
 
-    pdf_full_path_final = ""  # Path to the final downloaded file
+    pdf_full_path_final = ""
 
     # --- HELPER FUNCTION ---
     def attempt_download_and_add(book_md5, book_title, book_author, book_year_str, book_cover_url, book_file_format,
                                  is_alternative=False):
         nonlocal pdf_full_path_final
-        # Check if THIS VERSION (MD5) already exists before downloading
+
+        # Sprawdź czy ta wersja już istnieje
         existing_version = Book.query.filter_by(md5=book_md5).first()
         if existing_version:
             if is_alternative:
                 print(f"Alternative MD5 {book_md5} ('{book_title}') already exists in DB. Skipping download.")
-                return False, "Alternative version already in collection."
+                return False, "Alternative version already exists."
 
         year_p = None
-        if book_year_str and str(book_year_str).isdigit(): year_p = int(book_year_str)
+        if book_year_str and str(book_year_str).isdigit():
+            year_p = int(book_year_str)
 
         get_links_url = "https://annas-archive-api.p.rapidapi.com/download"
         get_links_params = {"md5": book_md5}
@@ -292,6 +324,7 @@ def add_from_annas_archive():
 
             downloaded_successfully = False
             last_err_msg_dl = "All download links failed."
+
             for i, actual_link in enumerate(dl_links):
                 print(f"Attempting PDF from link {i + 1}/{len(dl_links)}: {actual_link} for '{book_title}'")
                 try:
@@ -303,6 +336,7 @@ def add_from_annas_archive():
                     pdf_type = pdf_r.headers.get('Content-Type', '').lower()
                     pdf_disp = pdf_r.headers.get('Content-Disposition', '')
                     is_p = False
+
                     if 'application/pdf' in pdf_type:
                         is_p = True
                     elif 'application/octet-stream' in pdf_type:
@@ -313,8 +347,9 @@ def add_from_annas_archive():
                             if first_b == b'%PDF':
                                 is_p = True
                                 with open(current_pdf_full_path, 'wb') as f:
-                                    f.write(first_b); [f.write(c) for c in pdf_r.iter_content(8192)]
-                                downloaded_successfully = True;
+                                    f.write(first_b)
+                                    [f.write(c) for c in pdf_r.iter_content(8192)]
+                                downloaded_successfully = True
                                 break
                             else:
                                 print(f"Octet-stream not PDF: {first_b}")
@@ -322,7 +357,7 @@ def add_from_annas_archive():
                     if is_p and not downloaded_successfully:
                         with open(current_pdf_full_path, 'wb') as f:
                             [f.write(c) for c in pdf_r.iter_content(8192)]
-                        downloaded_successfully = True;
+                        downloaded_successfully = True
                         break
                     elif not is_p:
                         last_err_msg_dl = f"Link {i + 1} not PDF (type: {pdf_type})."
@@ -330,41 +365,55 @@ def add_from_annas_archive():
                 except requests.exceptions.RequestException as e_d:
                     print(f"Error with link {i + 1} for '{book_title}': {e_d}")
                     last_err_msg_dl = f"Error with link {i + 1}: {e_d}"
-                if downloaded_successfully: break
 
-            if not downloaded_successfully: return False, last_err_msg_dl
+                if downloaded_successfully:
+                    break
+
+            if not downloaded_successfully:
+                return False, last_err_msg_dl
 
             pdf_full_path_final = current_pdf_full_path
             print(f"File for '{book_title}' saved: {pdf_full_path_final}, Size: {os.path.getsize(pdf_full_path_final)}")
-            new_book_obj = Book(title=book_title, author=book_author, year_published=year_p,
-                                cover_url=book_cover_url, md5=book_md5, pdf_path=pdf_full_path_final,
-                                file_format=book_file_format, status=0, user_id=current_user.id)
+
+            # Utwórz główną książkę
+            new_book_obj = Book(
+                title=book_title,
+                author=book_author,
+                year_published=year_p,
+                cover_url=book_cover_url,
+                md5=book_md5,
+                pdf_path=pdf_full_path_final,
+                file_format=book_file_format
+            )
             db.session.add(new_book_obj)
+            db.session.flush()  # Zapisz żeby dostać ID
+
+            # Dodaj do kolekcji użytkownika
+            user_book = UserBook(
+                user_id=current_user.id,
+                book_id=new_book_obj.id,
+                status=0
+            )
+            db.session.add(user_book)
             db.session.commit()
+
             return True, book_title
 
-
         except requests.exceptions.HTTPError as e_http:
-
             err_msg = f"HTTP error for '{book_title}' (MD5: {book_md5}): {e_http.response.status_code}."
-
-            raw_error_text = e_http.response.text  # Save the raw error text
+            raw_error_text = e_http.response.text
 
             print(f"RAW HTTPError response text for {book_md5}: {raw_error_text}")
 
-            api_err_msg_to_check = raw_error_text  # Default to raw text
+            api_err_msg_to_check = raw_error_text
 
             try:
-                # Try to parse as JSON if possible to get a more structured message
                 err_detail = e_http.response.json()
-                api_err_msg_to_check = err_detail.get("message", raw_error_text)  # Use 'message' if available
+                api_err_msg_to_check = err_detail.get("message", raw_error_text)
             except (json.JSONDecodeError, ValueError):
-                pass  # Parsing failed; keep using raw_error_text
+                pass
 
-            # Check if the "member_download endpoint" is mentioned in the API error
-            # Only do this for the original MD5 if we want the fallback just for that
-            if book_md5 == original_md5:  # Make sure original_md5 is in outer scope
-
+            if book_md5 == original_md5:
                 print(
                     f"Checking for 'member_download endpoint' in API error: '{api_err_msg_to_check}' for original MD5 {original_md5}")
 
@@ -372,8 +421,7 @@ def add_from_annas_archive():
                     print(f"Detected 'member_download endpoint' requirement for original MD5 {book_md5}")
                     return "member_required", "Original book requires membership."
 
-            # If not "member_required" or not the original book, build a general error message
-            err_msg += f" Response: {api_err_msg_to_check[:100]}"  # Add a snippet of the error message
+            err_msg += f" Response: {api_err_msg_to_check[:100]}"
             print(err_msg)
             return False, err_msg
 
@@ -386,7 +434,7 @@ def add_from_annas_archive():
     final_flash_category = "danger"
 
     if success_status is True:
-        final_flash_message = f'Book "{result_message}" added to your shelf!'
+        final_flash_message = f'Book "{result_message}" added to your collection!'
         final_flash_category = "success"
     elif success_status == "member_required":
         print(
@@ -400,6 +448,7 @@ def add_from_annas_archive():
             "X-RapidAPI-Host": "annas-archive-api.p.rapidapi.com"
         }
         alternative_added = False
+
         try:
             alt_resp = requests.get(alt_search_url, headers=alt_search_headers, params=alt_search_params, timeout=20)
             alt_resp.raise_for_status()
@@ -469,8 +518,16 @@ def add_from_annas_archive():
 
 # --- Route to serve/read PDF files ---
 @app.route('/read_book/<int:book_id>')
+@login_required
 def read_book(book_id):
     book = Book.query.get_or_404(book_id)
+
+    # Sprawdź czy użytkownik ma tę książkę w kolekcji
+    user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    if not user_book:
+        flash("You don't have this book in your collection!", 'danger')
+        return redirect(url_for('book_detail', book_id=book_id))
+
     if book.pdf_path and os.path.exists(book.pdf_path):
         try:
             return send_file(book.pdf_path, as_attachment=False)
@@ -483,69 +540,82 @@ def read_book(book_id):
         return redirect(url_for('book_detail', book_id=book_id))
 
 
-# --- Delete Book Route (also delete PDF) ---
+# --- Delete Book Route (usuwa z kolekcji użytkownika) ---
 @app.route('/remove_book/<int:book_id>', methods=['POST'])
+@login_required
 def remove_book(book_id):
-    book_to_delete = Book.query.get_or_404(book_id)
-    pdf_path_to_delete = book_to_delete.pdf_path
+    """Usuń książkę z kolekcji użytkownika (nie usuwa głównej książki)"""
+    user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+
+    if not user_book:
+        flash("You don't have this book in your collection!", 'danger')
+        return redirect(url_for('home'))
+
+    book_title = user_book.book.title
+
     try:
-        db.session.delete(book_to_delete)
+        db.session.delete(user_book)
         db.session.commit()
-
-        if pdf_path_to_delete and os.path.exists(pdf_path_to_delete):
-            try:
-                os.remove(pdf_path_to_delete)
-                flash(f'Book "{book_to_delete.title}" and its PDF removed from your shelf.', 'success')
-            except OSError as e:
-                flash(
-                    f'Book "{book_to_delete.title}" removed from database, but an error occurred while deleting the PDF file: {e}',
-                    'warning')
-        else:
-            flash(f'Book "{book_to_delete.title}" removed from your shelf.', 'success')
-
+        flash(f'Book "{book_title}" removed from your collection.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f"Error removing book: {e}", 'danger')
+
     return redirect(url_for('home'))
 
 
 @app.route('/toggle_favorite/<int:book_id>', methods=['POST'])
+@login_required
 def toggle_favorite(book_id):
-    book = Book.query.get_or_404(book_id)
-    book.is_favorite = not book.is_favorite
+    user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+
+    if not user_book:
+        flash("You don't have this book in your collection!", 'danger')
+        return redirect(url_for('book_detail', book_id=book_id))
+
+    user_book.is_favorite = not user_book.is_favorite
+
     try:
         db.session.commit()
-        status = "added to" if book.is_favorite else "removed from"
-        flash(f'Book "{book.title}" {status} favorites.', 'success')
+        status = "added to" if user_book.is_favorite else "removed from"
+        flash(f'Book "{user_book.book.title}" {status} favorites.', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f"Error updating favorite status: {e}", 'danger')
+
     previous_url = request.referrer or url_for('home')
     return redirect(previous_url)
 
 
 @app.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
+@login_required
 def edit_book(book_id):
     book = Book.query.get_or_404(book_id)
+    user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+
+    if not user_book:
+        flash("You don't have this book in your collection!", 'danger')
+        return redirect(url_for('book_detail', book_id=book_id))
+
     categories = Category.query.all()
 
     if request.method == 'POST':
         try:
             category_id = request.form.get('category_id')
-            book.category_id = int(category_id) if category_id else None
+            user_book.category_id = int(category_id) if category_id else None
 
             new_status = int(request.form.get('status'))
-            book.status = new_status
+            user_book.status = new_status
 
             if new_status == 1:  # Reading
                 current_page_str = request.form.get('current_page')
-                book.current_page = int(current_page_str) if current_page_str and current_page_str.isdigit() else 1
-                if book.page_count and book.current_page > book.page_count:
-                    book.current_page = book.page_count
+                user_book.current_page = int(current_page_str) if current_page_str and current_page_str.isdigit() else 1
+                if book.page_count and user_book.current_page > book.page_count:
+                    user_book.current_page = book.page_count
             elif new_status == 2:  # Read
-                book.current_page = book.page_count if book.page_count else 0
+                user_book.current_page = book.page_count if book.page_count else 0
             else:  # To Read
-                book.current_page = 0
+                user_book.current_page = 0
 
             db.session.commit()
             flash(f'Book "{book.title}" updated successfully!', 'success')
@@ -557,15 +627,129 @@ def edit_book(book_id):
             db.session.rollback()
             flash(f"An error occurred while updating the book: {e}", 'danger')
 
-    return render_template('edit_book.html', book=book, categories=categories)
+    return render_template('edit_book.html', book=book, user_book=user_book, categories=categories)
 
 
 @app.route('/book/<int:book_id>')
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
-    return render_template('book_detail.html', book=book)
+
+    user_book = None
+    if current_user.is_authenticated:
+        user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+
+    return render_template('book_detail.html', book=book, user_book=user_book)
 
 
+# --- REVIEW ROUTES ---
+@app.route('/book/<int:book_id>/add_review', methods=['POST'])
+@login_required
+def add_review(book_id):
+    """Dodawanie nowej recenzji"""
+    book = Book.query.get_or_404(book_id)
+
+    # Sprawdź czy użytkownik już ma recenzję dla tej książki
+    existing_review = Review.query.filter_by(book_id=book_id, user_id=current_user.id).first()
+    if existing_review:
+        flash("You already have a review for this book. You can edit it instead.", 'warning')
+        return redirect(url_for('book_detail', book_id=book_id))
+
+    try:
+        rating = request.form.get('rating')
+        comment = request.form.get('comment', '').strip()
+
+        # Walidacja
+        if not rating and not comment:
+            flash("Please provide either a rating or a comment.", 'warning')
+            return redirect(url_for('book_detail', book_id=book_id))
+
+        if rating and (not rating.isdigit() or int(rating) < 1 or int(rating) > 5):
+            flash("Rating must be between 1 and 5.", 'danger')
+            return redirect(url_for('book_detail', book_id=book_id))
+
+        # Tworzenie nowej recenzji
+        new_review = Review(
+            rating=int(rating) if rating else None,
+            comment=comment if comment else None,
+            user_id=current_user.id,
+            book_id=book_id
+        )
+
+        db.session.add(new_review)
+        db.session.commit()
+
+        flash("Your review has been added successfully!", 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error adding review: {e}", 'danger')
+
+    return redirect(url_for('book_detail', book_id=book_id))
+
+
+@app.route('/book/<int:book_id>/edit_review/<int:review_id>', methods=['POST'])
+@login_required
+def edit_review(book_id, review_id):
+    """Edytowanie istniejącej recenzji"""
+    review = Review.query.get_or_404(review_id)
+
+    # Sprawdź czy recenzja należy do aktualnego użytkownika
+    if review.user_id != current_user.id:
+        flash("You can only edit your own reviews.", 'danger')
+        return redirect(url_for('book_detail', book_id=book_id))
+
+    try:
+        rating = request.form.get('rating')
+        comment = request.form.get('comment', '').strip()
+
+        # Walidacja
+        if not rating and not comment:
+            flash("Please provide either a rating or a comment.", 'warning')
+            return redirect(url_for('book_detail', book_id=book_id))
+
+        if rating and (not rating.isdigit() or int(rating) < 1 or int(rating) > 5):
+            flash("Rating must be between 1 and 5.", 'danger')
+            return redirect(url_for('book_detail', book_id=book_id))
+
+        # Aktualizacja recenzji
+        review.rating = int(rating) if rating else None
+        review.comment = comment if comment else None
+        review.date_modified = datetime.utcnow()
+
+        db.session.commit()
+        flash("Your review has been updated successfully!", 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating review: {e}", 'danger')
+
+    return redirect(url_for('book_detail', book_id=book_id))
+
+
+@app.route('/book/<int:book_id>/delete_review/<int:review_id>', methods=['POST'])
+@login_required
+def delete_review(book_id, review_id):
+    """Usuwanie recenzji"""
+    review = Review.query.get_or_404(review_id)
+
+    # Sprawdź czy recenzja należy do aktualnego użytkownika
+    if review.user_id != current_user.id:
+        flash("You can only delete your own reviews.", 'danger')
+        return redirect(url_for('book_detail', book_id=book_id))
+
+    try:
+        db.session.delete(review)
+        db.session.commit()
+        flash("Your review has been deleted.", 'info')
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting review: {e}", 'danger')
+
+    return redirect(url_for('book_detail', book_id=book_id))
+
+
+# --- USER AUTHENTICATION ROUTES ---
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -608,11 +792,39 @@ def login():
 def logout():
     logout_user()
     flash("Logged out.", 'info')
-    return redirect(url_for('home'))
+    return redirect(url_for('browse_books'))
+
+
+@app.route('/test_browse')
+def test_browse():
+    try:
+        books = Book.query.order_by(Book.title).all()
+        user_book_ids = []
+
+        if current_user.is_authenticated:
+            user_book_ids = [ub.book_id for ub in UserBook.query.filter_by(user_id=current_user.id).all()]
+
+        return f"""
+        <h1>Debug Browse Books</h1>
+        <p>Books found: {len(books)}</p>
+        <p>User authenticated: {current_user.is_authenticated}</p>
+        <p>User book IDs: {user_book_ids}</p>
+        <ul>
+        {''.join([f'<li>{book.title} by {book.author}</li>' for book in books[:5]])}
+        </ul>
+        """
+    except Exception as e:
+        return f"Error: {str(e)}<br><br>Type: {type(e)}"
+
 
 
 if __name__ == '__main__':
-    # create tables if they don't exist (useful for first run without migrations)
-    # with app.app_context():
-    # db.create_all()
     app.run(debug=True)
+
+
+
+
+
+
+
+

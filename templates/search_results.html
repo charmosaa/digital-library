@@ -29,7 +29,7 @@
         {% endif %}
     {% endwith %}
 
-    <form action="{{ url_for('search_books') }}" method="GET" class="search-form">
+    <form action="{{ url_for('search.search_books') }}" method="GET" class="search-form">
         <input type="text" name="query" placeholder="Search by title, author, ISBN..." value="{{ query or '' }}">
         <button class="add-button" type="submit">Search</button>
     </form>
@@ -49,7 +49,7 @@
                         {% if book.year %}<p>Year: {{ book.year }}</p>{% endif %}
                         <p>Format: {{ book.file_format | upper }}</p>
                     </div>
-                    <form action="{{ url_for('add_from_annas_archive') }}" method="POST" onsubmit="return handleAddPdf(event);">
+                    <form action="{{ url_for('annas_archive.add_from_annas_archive') }}" method="POST" onsubmit="return handleAddPdf(event);">
                         <input type="hidden" name="title" value="{{ book.title }}">
                         <input type="hidden" name="author" value="{{ book.author }}">
                         <input type="hidden" name="year" value="{{ book.year or '' }}">
@@ -68,7 +68,7 @@
         <!-- No need for this message if search requires query -->
     {% endif %}
 
-    <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>
+    <a href="{{ url_for('home.home') }}" class="back-link">← Back to shelf</a>
 
 
 <!-- Popup for unlogged user -->

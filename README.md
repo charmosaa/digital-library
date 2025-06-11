@@ -113,19 +113,19 @@ Local setup:
 
 ### Home page - your collection
 
-![Home page - your collection](screenshots\home_shelf.png)
+![Home page - your collection](static/screenshots\home_shelf.png)
 
 ### Browse with API
 
 Empty search - browse 20 popular books
 
-![empty search](screenshots/search.png)
+![empty search](static/screenshots/search.png)
 
 ### Search results
 
 Example search "Harry Potter"
 
-![search results](screenshots/search_results.png)
+![search results](static/screenshots/search_results.png)
 
 
 ---

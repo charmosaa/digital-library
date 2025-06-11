@@ -8,7 +8,7 @@
 <body>
 <div class="auth-container">
     <h2 class="register-title">Create an Account</h2>
-    <form method="POST" action="{{ url_for('register') }}">
+    <form method="POST" action="{{ url_for('auth.register') }}">
         <label for="username">Username</label>
         <input type="text" name="username" required>
 
@@ -17,8 +17,8 @@
 
         <button type="submit" class="register-button">Register</button>
     </form>
-    <a href="{{ url_for('login') }}" class="login-link">Already have an account? Log in</a>
-    <a href="{{ url_for('home') }}" class="register-link">← Back to your Shelf</a>
+    <a href="{{ url_for('auth.login') }}" class="login-link">Already have an account? Log in</a>
+    <a href="{{ url_for('home.home') }}" class="register-link">← Back to your Shelf</a>
 </div>
 
 <!-- MODAL: USERNAME ALREADY EXISTS -->
@@ -28,8 +28,8 @@
         <h2>Username already exists!</h2>
         <p>Please choose a different username or log in.</p>
         <div style="margin-top: 20px;">
-            <a href="{{ url_for('login') }}" class="popup-button login-style">Log in</a>
-            <a href="{{ url_for('register') }}" class="popup-button secondary">Try again</a>
+            <a href="{{ url_for('auth.login') }}" class="popup-button login-style">Log in</a>
+            <a href="{{ url_for('auth.register') }}" class="popup-button secondary">Try again</a>
         </div>
     </div>
 </div>

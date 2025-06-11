@@ -204,7 +204,7 @@
                 onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';" />
         </div>
         {% if current_user.is_authenticated and user_book %}
-        <form action="{{ url_for('toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 20px; right: 20px;">
+        <form action="{{ url_for('home.toggle_favorite', book_id=book.id) }}" method="POST" style="position: absolute; top: 20px; right: 20px;">
             <button type="submit" style="background: none; border: none; font-size: 1.8em; cursor: pointer;">
                 {% if user_book.is_favorite %}
                     ⭐
@@ -230,20 +230,20 @@
         <div class="actions">
             {% if current_user.is_authenticated %}
                 {% if user_book %}
-                    <a href="{{ url_for('edit_book', book_id=book.id) }}" class="button edit-button">Update Status</a>
+                    <a href="{{ url_for('book.edit_book', book_id=book.id) }}" class="button edit-button">Update Status</a>
                     {% if book.pdf_path %}
-                         <a href="{{ url_for('read_book', book_id=book.id) }}" class="button pdf-button">Read Book</a>
+                         <a href="{{ url_for('book.read_book', book_id=book.id) }}" class="button pdf-button">Read Book</a>
                     {% endif %}
-                    <form action="{{ url_for('remove_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this book from your collection?');">
+                    <form action="{{ url_for('book.remove_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this book from your collection?');">
                         <button type="submit" class="button delete-button">Remove from Collection</button>
                     </form>
                 {% else %}
-                    <form action="{{ url_for('add_book_to_collection', book_id=book.id) }}" method="POST">
+                    <form action="{{ url_for('book.add_book_to_collection', book_id=book.id) }}" method="POST">
                         <button type="submit" class="button edit-button">Add to My Collection</button>
                     </form>
                 {% endif %}
             {% else %}
-                <a href="{{ url_for('login') }}" class="button edit-button">Login to Add to Collection</a>
+                <a href="{{ url_for('auth.login') }}" class="button edit-button">Login to Add to Collection</a>
             {% endif %}
         </div>
 
@@ -274,7 +274,7 @@
                 <!-- Formularz dodawania nowej recenzji -->
                 <div class="review-form">
                     <h3>Add Your Review</h3>
-                    <form action="{{ url_for('add_review', book_id=book.id) }}" method="POST">
+                    <form action="{{ url_for('review.add_review', book_id=book.id) }}" method="POST">
                         <div class="rating-input">
                             <span><strong>Rating:</strong></span>
                             <div class="rating-stars">
@@ -304,7 +304,7 @@
             {% else %}
                 <div class="review-form">
                     <p style="text-align: center; color: #666;">
-                        <a href="{{ url_for('login') }}" style="color: #007bff;">Log in</a> to add your review
+                        <a href="{{ url_for('auth.login') }}" style="color: #007bff;">Log in</a> to add your review
                     </p>
                 </div>
             {% endif %}
@@ -317,7 +317,7 @@
                     {% if current_user.is_authenticated and review.user_id == current_user.id %}
                     <div class="review-actions">
                         <button class="edit-review-btn" onclick="toggleEditForm({{ review.id }})">✏️</button>
-                        <form style="display: inline;" action="{{ url_for('delete_review', book_id=book.id, review_id=review.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your review?');">
+                        <form style="display: inline;" action="{{ url_for('review.delete_review', book_id=book.id, review_id=review.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your review?');">
                             <button type="submit" class="delete-review-btn">🗑️</button>
                         </form>
                     </div>
@@ -346,7 +346,7 @@
                     <!-- Formularz edytowania (ukryty domyślnie) -->
                     {% if current_user.is_authenticated and review.user_id == current_user.id %}
                     <div id="edit-form-{{ review.id }}" class="edit-form">
-                        <form action="{{ url_for('edit_review', book_id=book.id, review_id=review.id) }}" method="POST">
+                        <form action="{{ url_for('review.edit_review', book_id=book.id, review_id=review.id) }}" method="POST">
                             <div class="rating-input">
                                 <span><strong>Rating:</strong></span>
                                 <div class="rating-stars">
@@ -378,7 +378,7 @@
             {% endif %}
         </div>
 
-        <a href="{{ url_for('home') }}" class="back-link">← Back to shelf</a>
+        <a href="{{ url_for('home.home') }}" class="back-link">← Back to shelf</a>
     </div>
 
     <script>

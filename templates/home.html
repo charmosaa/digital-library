@@ -11,10 +11,10 @@
     <div style="position: absolute; top: 20px; right: 30px;">
         {% if current_user.is_authenticated %}
             <span style="margin-right: 15px;">Welcome, <strong>{{ current_user.username }}</strong></span>
-            <a href="{{ url_for('logout') }}" class="button delete-button">Log out</a>
+            <a href="{{ url_for('auth.logout') }}" class="button delete-button">Log out</a>
         {% else %}
-            <a href="{{ url_for('login') }}" class="button" style="margin-right: 8px;">Log in</a>
-            <a href="{{ url_for('register') }}" class="button add-button">Register</a>
+            <a href="{{ url_for('auth.login') }}" class="button" style="margin-right: 8px;">Log in</a>
+            <a href="{{ url_for('auth.register') }}" class="button add-button">Register</a>
         {% endif %}
     </div>
 
@@ -31,16 +31,16 @@
 
     <!-- Sekcja wyszukiwania -->
     <div class="search-section">
-        <form action="{{ url_for('search_books') }}" method="GET" class="search-form-home">
+        <form action="{{ url_for('search.search_books') }}" method="GET" class="search-form-home">
             <input type="text" name="query" placeholder="Search books via API...">
             <button type="submit" class="button">Search API</button>
         </form>
-        <a href="{{ url_for('browse_books') }}" class="button browse-button">Browse All Books</a>
+        <a href="{{ url_for('book.browse_books') }}" class="button browse-button">Browse All Books</a>
     </div>
 
     {% if current_user.is_authenticated %}
         <!-- Filtry -->
-        <form method="GET" action="{{ url_for('home') }}" class="status-filter-form" id="filterForm">
+        <form method="GET" action="{{ url_for('home.home') }}" class="status-filter-form" id="filterForm">
             <div class="main_label">Filter by</div>
             <div style="display: flex; gap: 10px; align-items: center;">
                 <label for="status_filter">Status:</label>
@@ -100,7 +100,7 @@
                         </div>
 
                         <!-- Ulubione -->
-                        <form action="{{ url_for('toggle_favorite', book_id=user_book.book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
+                        <form action="{{ url_for('home.toggle_favorite', book_id=user_book.book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
                             <button type="submit" style="background: none; border: none; font-size: 1.3em; cursor: pointer;">
                                 {{ '⭐' if user_book.is_favorite else '☆' }}
                             </button>
@@ -108,7 +108,7 @@
 
                         <!-- Szczegóły książki -->
                         <div class="book-details">
-                            <a href="{{ url_for('book_detail', book_id=user_book.book.id) }}">
+                            <a href="{{ url_for('book.book_detail', book_id=user_book.book.id) }}">
                                 <img src="{{ user_book.book.cover_url }}"
                                      alt="Click for details"
                                      onerror="this.onerror=null;this.src='{{ url_for('static', filename='no_cover.png') }}';">
@@ -122,11 +122,11 @@
 
                         <!-- Akcje -->
                         <div class="book-actions">
-                            <a href="{{ url_for('edit_book', book_id=user_book.book.id) }}" class="edit-button">Status</a>
+                            <a href="{{ url_for('book.edit_book', book_id=user_book.book.id) }}" class="edit-button">Status</a>
                             {% if user_book.book.pdf_path %}
-                                <a href="{{ url_for('read_book', book_id=user_book.book.id) }}" class="pdf-button">Read</a>
+                                <a href="{{ url_for('book.read_book', book_id=user_book.book.id) }}" class="pdf-button">Read</a>
                             {% endif %}
-                            <form action="{{ url_for('remove_book', book_id=user_book.book.id) }}" method="POST" style="display:inline;">
+                            <form action="{{ url_for('book.remove_book', book_id=user_book.book.id) }}" method="POST" style="display:inline;">
                                 <button type="submit" class="delete-button" onclick="return confirm('Are you sure you want to remove this book from your collection?');">Remove</button>
                             </form>
                         </div>
@@ -134,13 +134,13 @@
                 {% endfor %}
             </div>
         {% else %}
-            <p>No books in your collection. <a href="{{ url_for('browse_books') }}">Browse available books</a> to add some!</p>
+            <p>No books in your collection. <a href="{{ url_for('book.browse_books') }}">Browse available books</a> to add some!</p>
         {% endif %}
     {% else %}
         <div style="text-align: center; margin-top: 50px;">
             <h2>Welcome to Digital Library!</h2>
-            <p>Please <a href="{{ url_for('login') }}">log in</a> to manage your personal book collection.</p>
-            <p>You can <a href="{{ url_for('browse_books') }}">browse available books</a> without logging in.</p>
+            <p>Please <a href="{{ url_for('auth.login') }}">log in</a> to manage your personal book collection.</p>
+            <p>You can <a href="{{ url_for('book.browse_books') }}">browse available books</a> without logging in.</p>
         </div>
     {% endif %}
 </body>

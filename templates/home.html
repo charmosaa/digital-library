@@ -41,13 +41,24 @@
     {% if current_user.is_authenticated %}
         <!-- Filtry -->
         <form method="GET" action="{{ url_for('home') }}" class="status-filter-form" id="filterForm">
+            <div class="main_label">Filter by</div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <label for="status_filter">Filter by status:</label>
+                <label for="status_filter">Status:</label>
                 <select name="status_filter" id="status_filter" onchange="this.form.submit()">
                     <option value="">All books</option>
                     <option value="0" {% if status_filter == '0' %}selected{% endif %}>To Read</option>
                     <option value="1" {% if status_filter == '1' %}selected{% endif %}>Reading</option>
                     <option value="2" {% if status_filter == '2' %}selected{% endif %}>Read</option>
+                </select>
+
+                <label for="category_filter">Category:</label>
+                <select name="category_filter" onchange="this.form.submit()">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category_filter == category.id|string %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
                 </select>
 
                 <label>
@@ -57,8 +68,8 @@
             </div>
 
             <div style="margin-top: 5px;">
-                <label for="sort_by">Sort by:</label>
-                <select name="sort_by" id="sort_by" onchange="this.form.submit()">
+                <label for="sort_by", class="main_label">Sort by:</label>
+                <select name="sort_by" id="sort_by" onchange="this.form.submit()" style="margin: 15px 0 0 15px;">
                     <option value="title_asc" {% if sort_by == 'title_asc' %}selected{% endif %}>Title A–Z</option>
                     <option value="title_desc" {% if sort_by == 'title_desc' %}selected{% endif %}>Title Z–A</option>
                     <option value="year_desc" {% if sort_by == 'year_desc' %}selected{% endif %}>Newest</option>

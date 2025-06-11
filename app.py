@@ -9,6 +9,7 @@ import json
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from scripts.load_categories import load_categories_from_file
 
 load_dotenv()
 
@@ -31,6 +32,15 @@ os.makedirs(PDF_FOLDER, exist_ok=True)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+with app.app_context():
+    # if Category is empty we load default categories from json
+    if Category.query.first() is None:
+        print("Loading categories from file...")
+        categories_file = os.path.join(os.path.dirname(__file__), 'data', 'categories.json')
+        load_categories_from_file(categories_file)
+        print("Categories loaded.")
+    else:
+        print("Categories already loaded.")
 
 # --- Helper function to sanitize filenames ---
 def sanitize_filename(filename):
@@ -46,6 +56,7 @@ def home():
     status_filter = request.args.get('status_filter')
     only_favorites = request.args.get('only_favorites') == '1'
     sort_by = request.args.get('sort_by')
+    category_filter = request.args.get('category_filter')
 
     if current_user.is_authenticated:
         # Pobierz UserBook dla zalogowanego użytkownika
@@ -60,6 +71,9 @@ def home():
     if only_favorites:
         query = query.filter(UserBook.is_favorite == True)
 
+    if category_filter and category_filter.isdigit():
+        query = query.filter(UserBook.category_id == int(category_filter))
+    
     if sort_by == 'title_asc':
         query = query.order_by(Book.title.asc())
     elif sort_by == 'title_desc':
@@ -72,6 +86,7 @@ def home():
         query = query.order_by(UserBook.date_added.desc())
 
     user_books = query.all()
+    categories = Category.query.order_by(Category.name).all() 
 
     # Statystyki
     stats = current_user.get_collection_stats()
@@ -85,7 +100,9 @@ def home():
         to_read_count=stats['to_read'],
         reading_count=stats['reading'],
         read_count=stats['read'],
-        sort_by=sort_by
+        sort_by=sort_by,
+        categories=categories,
+        category_filter=category_filter
     )
 
 

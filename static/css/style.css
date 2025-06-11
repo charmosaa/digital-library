@@ -279,6 +279,14 @@ input[type="submit"],
 .status-read { background-color: #28a745; }
 
 /* === FILTRY === */
+.main_label{
+    font-size: large;
+    font-weight: bold;
+    color: #155425;
+    display: flex;
+    margin: 10px 0 0 10px;
+}
+
 .status-filter-form {
     margin: 15px 0;
     display: flex;
@@ -289,6 +297,7 @@ input[type="submit"],
 
 .status-filter-form label {
     font-weight: bold;
+    margin-left: 10px;
 }
 
 .status-filter-form select {

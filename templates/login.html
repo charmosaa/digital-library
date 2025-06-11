@@ -3,68 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Log in</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 40px; }
-        .container { max-width: 400px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #007bff; text-align: center; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input[type="text"], input[type="password"] {
-            width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;
-        }
-        button {
-            margin-top: 20px; width: 100%; padding: 10px; background-color: #007bff;
-            color: white; border: none; border-radius: 5px; font-size: 16px;
-        }
-        a { display: block; text-align: center; margin-top: 15px; color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-
-        .popup-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-        .popup-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            max-width: 400px;
-            position: relative;
-        }
-        .popup-button {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .popup-button:hover {
-            background: #0056b3;
-        }
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-        }
-        .close-button:hover {
-            color: #000;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<div class="container">
-    <h2>Log in</h2>
+<div class="auth-container">
+    <h2 class="login-title">Log in</h2>
     <form method="POST" action="{{ url_for('login') }}">
         <label for="username">Username</label>
         <input type="text" name="username" required>
@@ -72,10 +15,10 @@
         <label for="password">Password</label>
         <input type="password" name="password" required>
 
-        <button type="submit">Log in</button>
+        <button type="submit" class="login-button">Log in</button>
     </form>
-    <a href="{{ url_for('register') }}">Don't have an account? Register here</a>
-    <a href="{{ url_for('home') }}">← Back to your Shelf</a>
+    <a href="{{ url_for('register') }}" class="register-link">Don't have an account? Register here</a>
+    <a href="{{ url_for('home') }}" class="login-link">← Back to your Shelf</a>
 </div>
 
 <!-- MODAL: ACCOUNT DOES NOT EXIST -->
@@ -85,8 +28,8 @@
         <h2>Account does not exist!</h2>
         <p>Please check your login details or register.</p>
         <div style="margin-top: 20px;">
-            <a href="{{ url_for('register') }}" class="popup-button">Register</a>
-            <a href="{{ url_for('login') }}" class="popup-button" style="background: #6c757d;">Try again</a>
+            <a href="{{ url_for('register') }}" class="popup-button register-style">Register</a>
+            <a href="{{ url_for('login') }}" class="popup-button secondary">Try again</a>
         </div>
     </div>
 </div>

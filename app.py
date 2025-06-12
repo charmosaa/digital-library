@@ -34,15 +34,20 @@ os.makedirs(PDF_FOLDER, exist_ok=True)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+from sqlalchemy import inspect
+
 with app.app_context():
-    # if Category is empty we load default categories from json
-    if Category.query.first() is None:
-        print("Loading categories from file...")
-        categories_file = os.path.join(os.path.dirname(__file__), 'data', 'categories.json')
-        load_categories_from_file(categories_file)
-        print("Categories loaded.")
-    else:
-        print("Categories already loaded.")
+    inspector = inspect(db.engine)
+    if 'category' in inspector.get_table_names():
+        if Category.query.first() is None:
+            print("Loading categories from file...")
+            categories_file = os.path.join(os.path.dirname(__file__), 'data', 'categories.json')
+            load_categories_from_file(categories_file)
+            print("Categories loaded.")
+        else:
+            print("Categories already loaded.")
+
+
 
 # --- USER AUTHENTICATION ROUTES ---
 @login_manager.user_loader

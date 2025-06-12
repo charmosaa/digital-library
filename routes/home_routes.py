@@ -81,3 +81,44 @@ def toggle_favorite(book_id):
 
     previous_url = request.referrer or url_for('home.home')
     return redirect(previous_url)
+
+from datetime import datetime, timedelta
+from collections import Counter
+
+@home_bp.route('/stats')
+@login_required
+def stats():
+    user_books = UserBook.query.filter_by(user_id=current_user.id).all()
+
+    stats = {
+        'total': len(user_books),
+        'read': sum(1 for b in user_books if b.status == 2),
+        'reading': sum(1 for b in user_books if b.status == 1),
+        'to_read': sum(1 for b in user_books if b.status == 0),
+        'favorites': sum(1 for b in user_books if b.is_favorite),
+        'total_pages': sum((b.book.page_count or 0) for b in user_books if b.status == 2)
+    }
+
+    # Daystreak: ile ostatnich dni z rzędu użytkownik coś przeczytał
+    read_dates = [b.date_modified.date() for b in user_books if b.status == 2 and b.date_modified]
+    unique_dates = sorted(set(read_dates), reverse=True)
+
+    daystreak = 0
+    today = datetime.utcnow().date()
+
+    for i, date in enumerate(unique_dates):
+        if date == today - timedelta(days=i):
+            daystreak += 1
+        else:
+            break
+
+    # Najczęściej wybierana kategoria
+    category_names = [b.category.name for b in user_books if b.category]
+    category_counter = Counter(category_names)
+    top_category = category_counter.most_common(1)[0][0] if category_counter else "None"
+
+    return render_template('stats.html',
+                           stats=stats,
+                           daystreak=daystreak,
+                           top_category=top_category)
+

@@ -19,6 +19,9 @@
     </style>
 </head>
 <body>
+    <div>
+        <a href="{{ url_for('home.home') }}" style="color: #007bff; font-weight: bold;">← Back to my Collection</a>
+    </div>
     <h1>Search for Books on Anna's Archive</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -65,36 +68,36 @@
     {% elif query %}
         <p>No books found for your query "{{ query }}". Try a different search.</p>
     {% else %}
-        <!-- No need for this message if search requires query -->
     {% endif %}
 
-    <a href="{{ url_for('home.home') }}" class="back-link">← Back to shelf</a>
-
-
 <!-- Popup for unlogged user -->
-<div id="loginPopup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:999;">
-  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; padding:20px; border-radius:10px; text-align:center; box-shadow:0 0 10px rgba(0,0,0,0.3);">
-    <p style="margin-bottom:20px;">You must be logged in to add a book!</p>
-    <a href="/login" class="login-popup-button">Log In</a>
-    <button onclick="closePopup()" class="login-popup-close">X</button>
+<div id="loginPopup" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:999; justify-content:center; align-items:center;">
+  <div style="background:white; padding:30px 40px; border-radius:16px; box-shadow:0 10px 25px rgba(0,0,0,0.2); position:relative; max-width:400px; width:100%; text-align:center;">
+      <button onclick="closePopup()" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>
+    <p style="font-size:18px; margin-bottom:25px; color:#333;">You must be logged in to add a book!</p>
+    <a href="/login" style="display:inline-block; padding:12px 24px; background:#dc3545; color:white; text-decoration:none; border-radius:8px; font-weight:bold; transition:background 0.3s;">
+      Log in
+    </a>
   </div>
 </div>
 
 <script>
-  const userIsAuthenticated = {{ current_user.is_authenticated|lower }};
+  const userIsAuthenticated = {{ current_user.is_authenticated | lower }};
 
   function handleAddPdf(event) {
     if (!userIsAuthenticated) {
       event.preventDefault();
-      document.getElementById("loginPopup").style.display = "block";
+      document.getElementById("loginPopup").style.display = "flex";
+      return false;
     }
-    // If logged in form will be uploaded
+    return true;
   }
 
   function closePopup() {
     document.getElementById("loginPopup").style.display = "none";
   }
 </script>
+
 
 
 </body>

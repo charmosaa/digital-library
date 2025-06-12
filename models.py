@@ -64,8 +64,8 @@ class UserBook(db.Model):
     personal_notes = db.Column(db.Text, nullable=True)  # Personal notes
     is_favorite = db.Column(db.Boolean, default=False)
     date_added = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-
-    # Constraint: jeden użytkownik może mieć książkę tylko raz w kolekcji
+    date_modified = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Constraint: 1user 1book in his collection
     __table_args__ = (db.UniqueConstraint('user_id', 'book_id', name='unique_user_book'),)
 
     # Relations
@@ -148,6 +148,8 @@ class User(db.Model, UserMixin):
             'read': read,
             'favorites': favorites
         }
+
+
 
     def __repr__(self):
         return f"User('{self.username}')"

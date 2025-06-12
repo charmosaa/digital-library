@@ -83,7 +83,7 @@
             align-items: flex-start;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            padding-right: 80px; /* Miejsce na ikony akcji */
+            padding-right: 80px;
             border-bottom: 1px solid #eee;
         }
 
@@ -120,7 +120,7 @@
         .review-comment {
             line-height: 1.6;
             color: #333;
-            margin-right: 80px; /* Miejsce na ikony akcji */
+            margin-right: 80px;
         }
 
         .review-actions {
@@ -230,12 +230,12 @@
         <div class="actions">
             {% if current_user.is_authenticated %}
                 {% if user_book %}
-                    <a href="{{ url_for('book.edit_book', book_id=book.id) }}" class="button edit-button">Update Status</a>
+                    <a href="{{ url_for('book.edit_book', book_id=book.id) }}" class="button edit-button">Update</a>
                     {% if book.pdf_path %}
-                         <a href="{{ url_for('book.read_book', book_id=book.id) }}" class="button pdf-button">Read Book</a>
+                         <a href="{{ url_for('book.read_book', book_id=book.id) }}" class="button pdf-button">Read</a>
                     {% endif %}
                     <form action="{{ url_for('book.remove_book', book_id=book.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this book from your collection?');">
-                        <button type="submit" class="button delete-button">Remove from Collection</button>
+                        <button type="submit" class="button delete-button">Remove</button>
                     </form>
                 {% else %}
                     <form action="{{ url_for('book.add_book_to_collection', book_id=book.id) }}" method="POST">
@@ -247,11 +247,11 @@
             {% endif %}
         </div>
 
-        <!-- SEKCJA RECENZJI -->
+        <!-- Reviews -->
         <div class="reviews-section">
             <h2>Community Reviews</h2>
 
-            <!-- Średnia ocena -->
+            <!-- Avg score -->
             {% if book.reviews %}
                 {% set avg_rating = book.average_rating() %}
                 {% if avg_rating %}
@@ -266,12 +266,12 @@
                 {% endif %}
             {% endif %}
 
-            <!-- Formularz dodawania/edytowania recenzji (tylko dla zalogowanych) -->
+            <!-- add/edit reviews -->
             {% if current_user.is_authenticated %}
                 {% set user_review = book.reviews|selectattr('user_id', 'equalto', current_user.id)|first %}
 
                 {% if not user_review %}
-                <!-- Formularz dodawania nowej recenzji -->
+                <!-- add new review -->
                 <div class="review-form">
                     <h3>Add Your Review</h3>
                     <form action="{{ url_for('review.add_review', book_id=book.id) }}" method="POST">
@@ -309,7 +309,7 @@
                 </div>
             {% endif %}
 
-            <!-- Lista recenzji -->
+            <!-- List of reviews -->
             {% if book.reviews %}
                 <h3>All Reviews ({{ book.reviews|length }})</h3>
                 {% for review in book.reviews|sort(attribute='date_created', reverse=true) %}
@@ -343,7 +343,7 @@
                     <div class="review-comment">{{ review.comment }}</div>
                     {% endif %}
 
-                    <!-- Formularz edytowania (ukryty domyślnie) -->
+                    <!-- Edit form -->
                     {% if current_user.is_authenticated and review.user_id == current_user.id %}
                     <div id="edit-form-{{ review.id }}" class="edit-form">
                         <form action="{{ url_for('review.edit_review', book_id=book.id, review_id=review.id) }}" method="POST">
@@ -377,8 +377,7 @@
                 </div>
             {% endif %}
         </div>
-
-        <a href="{{ url_for('home.home') }}" class="back-link">← Back to shelf</a>
+        <a href="{{ url_for('home.home') }}" class="back-link">← Back to my Colleciton</a>
     </div>
 
     <script>
@@ -391,7 +390,7 @@
             }
         }
 
-        // Obsługa hover dla gwiazdek rating
+        // Hover for rating
         document.querySelectorAll('.rating-stars').forEach(container => {
             const labels = container.querySelectorAll('label');
 

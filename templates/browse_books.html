@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
+    <a href="{{ url_for('home.home') if current_user.is_authenticated}}" class="back-link">{{ '← Back to My Collection' if current_user.is_authenticated}}
+    </a>
     <div style="position: absolute; top: 20px; right: 30px;">
         {% if current_user.is_authenticated %}
             <span style="margin-right: 15px;">Welcome, <strong>{{ current_user.username }}</strong></span>
@@ -59,7 +60,7 @@
                         {% if book.year_published %}<p>Year: {{ book.year_published }}</p>{% endif %}
                         {% if book.page_count %}<p>Pages: {{ book.page_count }}</p>{% endif %}
 
-                        <!-- Pokaż średnią ocenę z recenzji -->
+                        <!-- avg rating -->
                         {% set avg_rating = book.average_rating() %}
                         {% if avg_rating %}
                             <p style="color: #ffc107; font-weight: bold;">
@@ -95,10 +96,6 @@
             <p>No books available yet. <a href="{{ url_for('search.search_books') }}">Search for books</a> to add them to the library!</p>
         {% endif %}
     {% endif %}
-
-    <a href="{{ url_for('home.home') if current_user.is_authenticated else url_for('auth.login') }}" class="back-link">
-        ← Back to {{ 'My Collection' if current_user.is_authenticated else 'Login' }}
-    </a>
 
 </body>
 </html>

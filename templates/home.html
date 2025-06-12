@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <!-- Nawigacja użytkownika -->
     <div style="position: absolute; top: 20px; right: 30px;">
         {% if current_user.is_authenticated %}
             <span style="margin-right: 15px;">Welcome, <strong>{{ current_user.username }}</strong></span>
@@ -20,7 +19,7 @@
 
     <h1>My Collection</h1>
 
-    <!-- Wiadomości flash -->
+    <!-- flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -29,17 +28,19 @@
         {% endif %}
     {% endwith %}
 
-    <!-- Sekcja wyszukiwania -->
+    <!-- Search -->
     <div class="search-section">
         <form action="{{ url_for('search.search_books') }}" method="GET" class="search-form-home">
             <input type="text" name="query" placeholder="Search books via API...">
             <button type="submit" class="button">Search API</button>
         </form>
         <a href="{{ url_for('book.browse_books') }}" class="button browse-button">Browse All Books</a>
+        <a href="{{ url_for('home.stats') }}" class="button browse-button">My Stats</a>
+
     </div>
 
     {% if current_user.is_authenticated %}
-        <!-- Filtry -->
+        <!-- Filters -->
         <form method="GET" action="{{ url_for('home.home') }}" class="status-filter-form" id="filterForm">
             <div class="main_label">Filter by</div>
             <div style="display: flex; gap: 10px; align-items: center;">
@@ -87,7 +88,7 @@
             <div class="book-grid">
                 {% for user_book in user_books %}
                     <div class="book-card">
-                        <!-- Odznaki statusu -->
+                        <!-- Status of reading -->
                         <div class="book-badges-top">
                             <span class="category-tag">{{ user_book.category.name if user_book.category else 'Uncategorized' }}</span>
                             {% if user_book.status == 0 %}
@@ -99,14 +100,14 @@
                             {% endif %}
                         </div>
 
-                        <!-- Ulubione -->
+                        <!-- Favourites -->
                         <form action="{{ url_for('home.toggle_favorite', book_id=user_book.book.id) }}" method="POST" style="position: absolute; top: 10px; right: 10px;">
                             <button type="submit" style="background: none; border: none; font-size: 1.3em; cursor: pointer;">
                                 {{ '⭐' if user_book.is_favorite else '☆' }}
                             </button>
                         </form>
 
-                        <!-- Szczegóły książki -->
+                        <!-- Book details -->
                         <div class="book-details">
                             <a href="{{ url_for('book.book_detail', book_id=user_book.book.id) }}">
                                 <img src="{{ user_book.book.cover_url }}"
@@ -120,7 +121,7 @@
                             <p>Pages: {{ user_book.current_page }}{% if user_book.book.page_count %}/{{ user_book.book.page_count }}{% endif %}</p>
                         </div>
 
-                        <!-- Akcje -->
+                        <!-- ACtions -->
                         <div class="book-actions">
                             <a href="{{ url_for('book.edit_book', book_id=user_book.book.id) }}" class="edit-button">Status</a>
                             {% if user_book.book.pdf_path %}

@@ -1,7 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, send_file
 from models import db, Book, Category, UserBook
 from flask_login import login_required, current_user
+import io
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 
 home_bp = Blueprint('home', __name__)
@@ -96,7 +102,7 @@ def stats():
         'reading': sum(1 for b in user_books if b.status == 1),
         'to_read': sum(1 for b in user_books if b.status == 0),
         'favorites': sum(1 for b in user_books if b.is_favorite),
-        'total_pages': sum((b.book.page_count or 0) for b in user_books if b.status == 2)
+        'total_pages': sum((b.current_page or 0) for b in user_books if b.status == 1)
     }
 
     # Daystreak: ile ostatnich dni z rzędu użytkownik coś przeczytał
@@ -117,8 +123,56 @@ def stats():
     category_counter = Counter(category_names)
     top_category = category_counter.most_common(1)[0][0] if category_counter else "None"
 
+    chart = None
+    if category_counter:
+        fig, ax = plt.subplots()
+
+        # color pallete
+        colors = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#c2c2f0', '#ffb3e6']
+
+        ax.pie(
+            category_counter.values(),
+            labels=category_counter.keys(),
+            autopct='%1.1f%%',
+            startangle=140,
+            colors=colors[:len(category_counter)]  # trim or match number of categories
+        )
+        ax.set_title("Your Book Categories")
+
+        buf = BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        chart = base64.b64encode(buf.read()).decode('utf-8')
+        buf.close()
+        plt.close()
+
     return render_template('stats.html',
                            stats=stats,
                            daystreak=daystreak,
-                           top_category=top_category)
+                           top_category=top_category, 
+                           chart=chart)
 
+
+@home_bp.route('/stats/chart.png')
+@login_required
+def stats_chart():
+    user_books = UserBook.query.filter_by(user_id=current_user.id).all()
+
+    labels = ['Read', 'Reading', 'To Read', 'Favorites']
+    values = [
+        sum(1 for b in user_books if b.status == 2),
+        sum(1 for b in user_books if b.status == 1),
+        sum(1 for b in user_books if b.status == 0),
+        sum(1 for b in user_books if b.is_favorite),
+    ]
+
+    fig, ax = plt.subplots()
+    ax.bar(labels, values, color=['green', 'gold', 'cyan', 'red'])
+    ax.set_title('Reading Breakdown')
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    plt.close(fig)
+
+    return send_file(buf, mimetype='image/png')

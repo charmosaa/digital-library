@@ -107,8 +107,17 @@
             <h3>Top Category</h3>
             <div class="stat-value stat-blue">{{ top_category }}</div>
         </div>
-
     </div>
+    <h2 style="text-align: center; margin-top: 40px;">Reading Breakdown</h2>
+    <img src="{{ url_for('home.stats_chart') }}" alt="Reading Chart" style="display: block; margin: 0 auto;">
+
+    {% if chart %}
+    <h2 style="text-align: center; margin-top: 40px;">Book Categories</h2>
+    <img src="data:image/png;base64,{{ chart }}" alt="Book Category Pie Chart"  style="display: block; margin: 0 auto;">
+    {% else %}
+    <p>No books with categories to show.</p>
+    {% endif %}
+
 </div>
 </body>
 </html>

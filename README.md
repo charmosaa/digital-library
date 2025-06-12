@@ -1,28 +1,13 @@
 # Digital Library
-App for book browsing and categorization 
+App for book browsing, categorization and digital reading 
 
 ---
 
 ## Project Goal
 
 
-The primary goal of this project is to create a comprehensive tool for book enthusiasts, enabling easy cataloging, organizing, and tracking of reading progress. The application will allow users to add, view, edit, and delete books, assign them to categories, and monitor their reading status.
+The primary goal of this project is to create a comprehensive tool for book enthusiasts, enabling easy cataloging, organizing, and tracking of reading progress. The application will allow users to add (from API), view, edit, and delete books, assign them to categories, and monitor their reading status. Users can also see their detailed statistics and add reviews.
 
-
----
-
-## So far implemented:
-- book and category model in database
-- book browsing (via API)
-- adding book to (to-read, reading, read)  collection
-- adding book manualy (for testing)
-- adding to favourite and filtering by favourite
----
-## TO DO:
- - adding book category (for the books from API now they are all uncategorized)
- - when clicking on the book maybe more info?
- - maybe more filters for browsing
- - diagrams and stats for your books
 
 ---
 ## Key Features
@@ -31,10 +16,12 @@ The primary goal of this project is to create a comprehensive tool for book enth
 * **CRUD Operations:** Add, view, edit, and delete book entries.
 * **Categorization:** Organize books into various categories (e.g., fantasy, science fiction, non-fiction).
 * **Reading Progress Tracking:** Monitor reading status (to-read, in-progress, completed) and current page progress.
-* **Search & Filter:** Efficiently search and filter books by various criteria.
-* **Data Import/Export:** Import and export book data (e.g., to/from CSV/JSON formats).
-* **External API Integration (Planned):** Integrate with external APIs (e.g., Open Library, Google Books) for quick metadata retrieval.
-* **Reading Statistics (Planned):** Visualize reading habits and statistics (e.g., number of books read, genre distribution).
+* **Add to favourite:** Add books to favourites (you can also filter by favourites)
+* **Search & Filter:** Efficiently search and filter books by various criteria (status, category, year, title).
+* **Reading Statistics:** Visualize reading habits and statistics (number of books read, genre distribution, pages).
+* **Book details and reviews:** Add review to books from your collection and see other reviews
+* **Data Import/Export:** Import static categories data from JSON
+* **External API Integration:** Integrated with Anna's Archive API for pdf browsing and downloading
 
 ---
 
@@ -86,6 +73,12 @@ Local setup:
     ```
     *Note: `python-dotenv` will automatically load these variables when `flask run` is executed.*
 
+    For API integration you need your personal access key. You can get it there: https://rapidapi.com/tribestick-tribestick-default/api/annas-archive-api (free plan is enough) and then put it in `.env` file in the root of this project:
+
+    ```
+    RAPIDAPI_KEY = XXXXXXX
+    ```
+    
 ---  
 
 5.  **Upgrade database:** when running the first time and after any changes in `models.py`
@@ -109,27 +102,27 @@ Local setup:
 
 ---
 
-## Screenshots
+## Visualization
 
 ### Home page - your collection
 
 ![Home page - your collection](static/screenshots\home_shelf.png)
 
-### Browse with API
+### Search with API
 
-Empty search - browse 20 popular books
-
-![empty search](static/screenshots/search.png)
-
-### Search results
-
-Example search "Harry Potter"
+Example search "The Lord of the Rings"
 
 ![search results](static/screenshots/search_results.png)
 
+### Browse (for logged and unlogged) - all books in the system
 
----
+![search results](static/screenshots/browse_unlogged.png)
 
-## Example Test Data
+### Statistics
 
-*(Link to an example CSV/JSON file with test book data for import will be provided here.)*
+![search results](static/screenshots/stats.png)
+
+### Book details and opinions
+
+![search results](static/screenshots/details.png)
+

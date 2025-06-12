@@ -106,7 +106,7 @@ Local setup:
 
 ### Home page - your collection
 
-![Home page - your collection](static/screenshots\home_shelf.png)
+![Home page - your collection](static/screenshots/home_shelf.png)
 
 ### Search with API
 

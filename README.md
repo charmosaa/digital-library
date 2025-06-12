@@ -22,7 +22,7 @@ The primary goal of this project is to create a comprehensive tool for book enth
 * **Book details and reviews:** Add review to books from your collection and see other reviews
 * **Data Import/Export:** Import static categories data from JSON
 * **External API Integration:** Integrated with Anna's Archive API for pdf browsing and downloading
-
+* **AI assistant:** Ask assistant for book reccomendation
 ---
 
 ## System Requirements
@@ -125,4 +125,8 @@ Example search "The Lord of the Rings"
 ### Book details and opinions
 
 ![search results](static/screenshots/details.png)
+
+### AI assistant
+
+![search results](static/screenshots/asystent.png)
 

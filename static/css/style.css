@@ -75,10 +75,11 @@ input[type="submit"],
 .button { background-color: #007bff; color: white; }
 .button:hover { background-color: #0056b3; }
 
-.button.browse-button,
-.add-button { background-color: #28a745; color: white; }
-.button.browse-button:hover,
-.add-button:hover { background-color: #218838; }
+.button.browse-button { background-color: #28a745; color: white; }
+.browse-button:hover  { background-color: #218838; }
+
+.my-stats-btn { background-color: #f7b0e9; color: white; }
+.my-stats-btn:hover { background-color: #e59ded;}
 
 .edit-button { background-color: #ffc107; color: white; }
 .edit-button:hover { background-color: #e0a800; }

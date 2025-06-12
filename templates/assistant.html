@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .assistant-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+            background: #fdfdfd;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .assistant-form textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        .assistant-form .button {
+            background-color: #6f42c1; /* Fioletowy kolor */
+        }
+        .assistant-answer {
+            margin-top: 30px;
+            background: #f0f2f5;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap; /* Zachowuje formatowanie odpowiedzi */
+            line-height: 1.6;
+        }
+        .assistant-answer h3 {
+            margin-top: 0;
+            color: #6f42c1;
+        }
+    </style>
+</head>
+<body>
+    <div class="assistant-container">
+        <a href="{{ url_for('home.home') }}" class="back-link">← Back to My Collection</a>
+        <h1>AI Assistant</h1>
+        <p>Ask me anything about books, authors, or literary awards!</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="assistant-form">
+            <textarea name="query" placeholder="e.g., 'Recommend a classic science fiction book' or 'Which books won the Pulitzer Prize in 2020?'">{{ query or '' }}</textarea>
+            <button type="submit" class="button">Ask Assistant</button>
+        </form>
+
+        {% if answer %}
+            <div class="assistant-answer">
+                <h3>Assistant's Response:</h3>
+                <p>{{ answer | safe }}</p>
+            </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>

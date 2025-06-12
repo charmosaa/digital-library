@@ -1,8 +1,9 @@
+# routes/search_routes.py
+
 from flask import Blueprint, render_template, request
 from flask import Blueprint, render_template, request, flash, current_app
 import requests
 import json
-
 
 search_bp = Blueprint('search', __name__)
 
@@ -26,9 +27,9 @@ def search_books():
         "q": query,
         "lang": "en",
         "content": "book_any",
-        "ext": "pdf",
+        "ext": "pdf, epub",
         "sort": "most_relevant",
-        "limit": "10"
+        "limit": "20"
     }
     headers = {
         "X-RapidAPI-Key": current_app.config['RAPIDAPI_KEY'],
@@ -41,6 +42,7 @@ def search_books():
         response.raise_for_status()
         data = response.json()
 
+        api_response_items = []
         if isinstance(data, dict) and 'books' in data and isinstance(data['books'], list):
             print("API response is a dict with a 'books' list.")
             api_response_items = data['books']
@@ -48,22 +50,23 @@ def search_books():
             print(f"API response structure not recognized. Data: {data}")
 
         if api_response_items:
-            found_pdf_books = False
+            found_books = False
             for item in api_response_items:
-                if item.get('format', '').lower() == 'pdf':
+                file_format = item.get('format', '').lower()
+                if file_format in ['pdf', 'epub']:
                     books_from_api.append({
                         'title': item.get('title', 'No Title'),
                         'author': item.get('author', 'No Author'),
                         'year': item.get('year'),
                         'cover_url': item.get('imgUrl'),
                         'md5': item.get('md5'),
-                        'file_format': item.get('format', 'pdf')
+                        'file_format': file_format
                     })
-                    found_pdf_books = True
+                    found_books = True
 
-            title_text = f"Search results for '{query}' (PDFs only)"
-            if not found_pdf_books:
-                flash(f"No PDF books found for your query '{query}'. API returned results, but none were PDFs.", 'info')
+            title_text = f"Search results for '{query}'"
+            if not found_books:
+                flash(f"No PDF or EPUB books found for your query '{query}'.", 'info')
         else:
             flash(f"No books found in the API response for your query '{query}'.", 'info')
             title_text = f"Search results for '{query}'"
@@ -91,4 +94,3 @@ def search_books():
         flash(f"An unexpected error occurred during search: {e}", 'danger')
 
     return render_template('search_results.html', books=books_from_api, query=query, title_text=title_text)
-

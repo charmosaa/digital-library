@@ -5,15 +5,18 @@ from models import db, Category, User
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from scripts.load_categories import load_categories_from_file
-
+from routes.assistant_routes import assistant_bp
 from routes.anna_routes import annas_archive_bp
 from routes.auth_routes import auth_bp 
 from routes.book_routes import book_bp
 from routes.home_routes import home_bp
 from routes.review_routes import review_bp
 from routes.search_routes import search_bp
-
+from flask_misaka import Misaka
 load_dotenv()
+
+app = Flask(__name__)
+Misaka(app)
 
 app = Flask(__name__)
 
@@ -61,6 +64,7 @@ app.register_blueprint(book_bp)
 app.register_blueprint(search_bp)
 app.register_blueprint(review_bp)
 app.register_blueprint(annas_archive_bp)
+app.register_blueprint(assistant_bp)
 
 
 if __name__ == '__main__':

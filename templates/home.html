@@ -34,8 +34,9 @@
             <input type="text" name="query" placeholder="Search books via API...">
             <button type="submit" class="button">Search API</button>
         </form>
-        <a href="{{ url_for('book.browse_books') }}" class="button browse-button">Browse All Books</a>
-        <a href="{{ url_for('home.stats') }}" class="button browse-button">My Stats</a>
+        <a href="{{ url_for('book.browse_books') }}" class="button browse-button">Popular Books</a>
+        <a href="{{ url_for('home.stats') }}" class="button my-stats-btn">My Stats</a>
+        <a href="{{ url_for('assistant.assistant') }}" class="button" style="background-color: #826ef5; color: white;">Assistant</a>
 
     </div>
 

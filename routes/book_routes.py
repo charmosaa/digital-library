@@ -1,16 +1,15 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from flask_login import current_user
-from flask import render_template, request, redirect, url_for, flash, current_app, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, \
+    send_from_directory
+from flask_login import login_required, current_user
 from models import db, Book, Category, UserBook
 import os
-from flask_login import login_required, current_user
-
 
 book_bp = Blueprint('book', __name__)
 
+
 @book_bp.route('/browse_books')
 def browse_books():
-    """Przeglądaj wszystkie dostępne książki w systemie"""
+
     query = request.args.get('query', '').strip()
 
     books_query = Book.query
@@ -22,7 +21,6 @@ def browse_books():
 
     books = books_query.order_by(Book.title).all()
 
-    # Dla zalogowanych użytkowników - sprawdź które książki już mają
     user_book_ids = []
     if current_user.is_authenticated:
         user_book_ids = [ub.book_id for ub in UserBook.query.filter_by(user_id=current_user.id).all()]
@@ -60,7 +58,8 @@ def add_book_to_collection(book_id):
 
     return redirect(url_for('book.book_detail', book_id=book_id))
 
-# --- Route to serve/read PDF files ---
+
+# --- ZMIANA: Ta trasa teraz decyduje, jak otworzyć książkę (PDF vs EPUB) ---
 @book_bp.route('/read_book/<int:book_id>')
 @login_required
 def read_book(book_id):
@@ -72,16 +71,49 @@ def read_book(book_id):
         flash("You don't have this book in your collection!", 'danger')
         return redirect(url_for('book.book_detail', book_id=book_id))
 
+    # Pole 'pdf_path' przechowuje ścieżkę do pliku, niezależnie od formatu
     if book.pdf_path and os.path.exists(book.pdf_path):
-        try:
-            return send_file(book.pdf_path, as_attachment=False)
-        except Exception as e:
-            current_app.logger.error(f"Error sending file {book.pdf_path}: {e}")
-            flash("Could not open the book file.", "danger")
+        if book.file_format == 'pdf':
+            # Dla PDF serwujemy plik bezpośrednio, przeglądarka go otworzy
+            try:
+                return send_file(book.pdf_path, as_attachment=False)
+            except Exception as e:
+                current_app.logger.error(f"Error sending file {book.pdf_path}: {e}")
+                flash("Could not open the book file.", "danger")
+                return redirect(url_for('book.book_detail', book_id=book_id))
+
+        elif book.file_format == 'epub':
+            # Dla EPUB renderujemy szablon czytnika i przekazujemy mu URL do pliku
+            epub_url = url_for('book.serve_book_file', book_id=book.id)
+            return render_template('epub_reader.html', book=book, epub_url=epub_url)
+
+        else:
+            flash(f"Unsupported file format: {book.file_format}", "warning")
             return redirect(url_for('book.book_detail', book_id=book_id))
     else:
-        flash("PDF file not found for this book.", "danger")
+        flash("Book file not found on the server.", "danger")
         return redirect(url_for('book.book_detail', book_id=book_id))
+
+
+# --- ZMIANA: Nowa, bezpieczna trasa do serwowania plików dla czytnika EPUB ---
+@book_bp.route('/serve_book_file/<int:book_id>')
+@login_required
+def serve_book_file(book_id):
+    """Bezpiecznie serwuje plik książki (np. EPUB) do czytnika po stronie klienta."""
+    book = Book.query.get_or_404(book_id)
+
+    # Podwójne sprawdzenie, czy użytkownik ma dostęp
+    user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
+    if not user_book:
+        return "Access Denied", 403
+
+    if book.pdf_path and os.path.exists(book.pdf_path):
+        directory = os.path.dirname(book.pdf_path)
+        filename = os.path.basename(book.pdf_path)
+        # Używamy send_from_directory dla bezpieczeństwa (ochrona przed path traversal)
+        return send_from_directory(directory, filename)
+    else:
+        return "File not found", 404
 
 
 # --- Delete Book Route (usuwa z kolekcji użytkownika) ---
@@ -106,6 +138,7 @@ def remove_book(book_id):
         flash(f"Error removing book: {e}", 'danger')
 
     return redirect(url_for('home.home'))
+
 
 @book_bp.route('/edit_book/<int:book_id>', methods=['GET', 'POST'])
 @login_required
@@ -148,6 +181,7 @@ def edit_book(book_id):
             flash(f"An error occurred while updating the book: {e}", 'danger')
 
     return render_template('edit_book.html', book=book, user_book=user_book, categories=categories)
+
 
 @book_bp.route('/book/<int:book_id>')
 def book_detail(book_id):

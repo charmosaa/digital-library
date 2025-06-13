@@ -59,22 +59,21 @@ def add_book_to_collection(book_id):
     return redirect(url_for('book.book_detail', book_id=book_id))
 
 
-# --- ZMIANA: Ta trasa teraz decyduje, jak otworzyć książkę (PDF vs EPUB) ---
 @book_bp.route('/read_book/<int:book_id>')
 @login_required
 def read_book(book_id):
     book = Book.query.get_or_404(book_id)
 
-    # Sprawdź czy użytkownik ma tę książkę w kolekcji
+
     user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
     if not user_book:
         flash("You don't have this book in your collection!", 'danger')
         return redirect(url_for('book.book_detail', book_id=book_id))
 
-    # Pole 'pdf_path' przechowuje ścieżkę do pliku, niezależnie od formatu
+
     if book.pdf_path and os.path.exists(book.pdf_path):
         if book.file_format == 'pdf':
-            # Dla PDF serwujemy plik bezpośrednio, przeglądarka go otworzy
+
             try:
                 return send_file(book.pdf_path, as_attachment=False)
             except Exception as e:
@@ -83,7 +82,7 @@ def read_book(book_id):
                 return redirect(url_for('book.book_detail', book_id=book_id))
 
         elif book.file_format == 'epub':
-            # Dla EPUB renderujemy szablon czytnika i przekazujemy mu URL do pliku
+
             epub_url = url_for('book.serve_book_file', book_id=book.id)
             return render_template('epub_reader.html', book=book, epub_url=epub_url)
 
@@ -95,14 +94,13 @@ def read_book(book_id):
         return redirect(url_for('book.book_detail', book_id=book_id))
 
 
-# --- ZMIANA: Nowa, bezpieczna trasa do serwowania plików dla czytnika EPUB ---
+
 @book_bp.route('/serve_book_file/<int:book_id>')
 @login_required
 def serve_book_file(book_id):
-    """Bezpiecznie serwuje plik książki (np. EPUB) do czytnika po stronie klienta."""
+
     book = Book.query.get_or_404(book_id)
 
-    # Podwójne sprawdzenie, czy użytkownik ma dostęp
     user_book = UserBook.query.filter_by(user_id=current_user.id, book_id=book_id).first()
     if not user_book:
         return "Access Denied", 403
@@ -116,7 +114,7 @@ def serve_book_file(book_id):
         return "File not found", 404
 
 
-# --- Delete Book Route (usuwa z kolekcji użytkownika) ---
+
 @book_bp.route('/remove_book/<int:book_id>', methods=['POST'])
 @login_required
 def remove_book(book_id):

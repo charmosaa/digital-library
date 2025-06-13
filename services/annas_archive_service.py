@@ -9,7 +9,7 @@ from utils.string_utils import are_strings_similar, sanitize_filename
 
 
 def get_pdf_folder():
-    """Zwraca ścieżkę do folderu z książkami i tworzy go, jeśli nie istnieje."""
+
     folder = os.path.join(current_app.instance_path, 'pdfs')
     os.makedirs(folder, exist_ok=True)
     return folder
@@ -178,7 +178,7 @@ def attempt_download_and_add(book_md5, book_title, book_author, book_year_str, b
 def try_add_original_or_alternatives(original_title, original_author, original_year_str, original_cover_url,
                                      original_md5, original_file_format, original_search_query, user):
     """
-    Główna logika biznesowa: próbuje dodać oryginalną książkę, a w razie niepowodzenia
+     próbuje dodać oryginalną książkę, a w razie niepowodzenia
     szuka i próbuje dodać wersje alternatywne.
     """
     success_status, result_message, final_file_path = attempt_download_and_add(
@@ -219,7 +219,7 @@ def try_add_original_or_alternatives(original_title, original_author, original_y
             final_flash_category = "warning"
             return final_flash_message, final_flash_category, None
 
-        # --- LOGIKA PRIORYTETÓW ---
+
         print("--- Priority 1: Searching for same Title AND Author ---")
         for alt_item in alt_data_list:
             if alt_item.get('md5') == original_md5: continue
@@ -227,8 +227,7 @@ def try_add_original_or_alternatives(original_title, original_author, original_y
                     are_strings_similar(alt_item.get('author'), original_author):
                 print(f"Found match: {alt_item.get('title')} by {alt_item.get('author')}")
 
-                # <<< KLUCZOWA POPRAWKA TUTAJ >>>
-                # Pobieramy format z elementu alternatywnego, a nie z hardkodowanej wartości
+
                 alt_format = alt_item.get('format', 'pdf')
 
                 alt_s, alt_m, _ = attempt_download_and_add(
@@ -249,7 +248,7 @@ def try_add_original_or_alternatives(original_title, original_author, original_y
                 if are_strings_similar(alt_item.get('title'), original_title):
                     print(f"Found match: {alt_item.get('title')}")
 
-                    # <<< KLUCZOWA POPRAWKA TUTAJ >>>
+
                     alt_format = alt_item.get('format', 'pdf')
 
                     alt_s, alt_m, _ = attempt_download_and_add(

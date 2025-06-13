@@ -1,4 +1,3 @@
-# routes/search_routes.py
 
 from flask import Blueprint, render_template, request
 from flask import Blueprint, render_template, request, flash, current_app
